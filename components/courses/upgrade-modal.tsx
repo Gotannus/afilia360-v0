@@ -18,13 +18,11 @@ export function UpgradeModal({ open, onOpenChange, currentPlan, lockedCourseTitl
 
   const handleUpgrade = async () => {
     setLoading(true)
-    // TODO: Integrar com sistema de pagamento
-    // Por enquanto, apenas fecha o modal
+    window.open("https://pay.celetus.com/ZOXLWXI9", "_blank")
     setTimeout(() => {
       setLoading(false)
       onOpenChange(false)
-      alert("Sistema de pagamento em desenvolvimento. Em breve você poderá fazer o upgrade!")
-    }, 1000)
+    }, 500)
   }
 
   const superVipFeatures = [

@@ -119,6 +119,7 @@ export default function SejaVipPage() {
             <Button
               size="lg"
               className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-bold text-lg px-8 py-6 h-auto shadow-lg hover:shadow-xl transition-all hover:scale-105"
+              onClick={() => window.open("https://pay.celetus.com/ZOXLWXI9", "_blank")}
             >
               <Crown className="h-5 w-5 mr-2" />
               Quero ser VIP Agora
@@ -179,6 +180,7 @@ export default function SejaVipPage() {
             <Button
               size="lg"
               className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-bold text-lg px-10 py-6 h-auto"
+              onClick={() => window.open("https://pay.celetus.com/ZOXLWXI9", "_blank")}
             >
               <Crown className="h-5 w-5 mr-2" />
               Ativar Meu VIP
