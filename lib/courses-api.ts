@@ -198,6 +198,22 @@ export async function getPlans(): Promise<MemberPlan[]> {
 export async function checkCourseAccess(userId: string, courseId: string): Promise<boolean> {
   const supabase = createClient()
 
+  // Primeiro verifica se tem acesso individual (orderbump)
+  const { data: individualAccess, error: individualError } = await supabase
+    .from("user_course_access")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("course_id", courseId)
+    .maybeSingle()
+
+  if (individualError) {
+    console.error("Erro ao verificar acesso individual:", individualError)
+  }
+
+  // Se tem acesso individual, retorna true
+  if (individualAccess) return true
+
+  // Caso contrário, verifica acesso por plano
   const { data: user, error: userError } = await supabase
     .from("affiliates")
     .select("plan_id")
@@ -484,4 +500,75 @@ export async function updatePlanCourseAccess(planId: string, courseIds: string[]
   }
 
   return true
+}
+
+// Admin: Listar todos os orderbumps (acessos individuais)
+export async function getUserCourseAccessList(): Promise<any[]> {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from("user_course_access")
+    .select(`
+      *,
+      user:affiliates(id, name, email),
+      course:courses(id, title, slug)
+    `)
+    .order("created_at", { ascending: false })
+
+  if (error) {
+    console.error("Erro ao buscar orderbumps:", error)
+    return []
+  }
+  return data || []
+}
+
+// Admin: Adicionar orderbump (liberar curso para usuário)
+export async function addUserCourseAccess(
+  userId: string,
+  courseId: string,
+  grantedBy: string = "manual",
+  notes: string = "",
+): Promise<boolean> {
+  const supabase = createClient()
+  const { error } = await supabase.from("user_course_access").insert([
+    {
+      user_id: userId,
+      course_id: courseId,
+      granted_by: grantedBy,
+      notes: notes,
+    },
+  ])
+
+  if (error) {
+    console.error("Erro ao adicionar orderbump:", error)
+    return false
+  }
+  return true
+}
+
+// Admin: Remover orderbump (remover acesso individual)
+export async function removeUserCourseAccess(userId: string, courseId: string): Promise<boolean> {
+  const supabase = createClient()
+  const { error } = await supabase
+    .from("user_course_access")
+    .delete()
+    .eq("user_id", userId)
+    .eq("course_id", courseId)
+
+  if (error) {
+    console.error("Erro ao remover orderbump:", error)
+    return false
+  }
+  return true
+}
+
+// Admin: Buscar todos os usuários
+export async function getUsers(): Promise<any[]> {
+  const supabase = createClient()
+  const { data, error } = await supabase.from("affiliates").select("id, name, email, plan_id").order("name")
+
+  if (error) {
+    console.error("Erro ao buscar usuários:", error)
+    return []
+  }
+  return data || []
 }
