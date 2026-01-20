@@ -94,6 +94,9 @@ interface LocalCourse {
   is_published: boolean
   is_featured: boolean
   sort_order: number
+  is_orderbump?: boolean
+  orderbump_price?: number
+  orderbump_description?: string
   category?: Category
 }
 
@@ -1274,6 +1277,9 @@ function CoursesTab() {
     duration_hours: 0,
     is_published: false,
     is_featured: false,
+    is_orderbump: false,
+    orderbump_price: 0,
+    orderbump_description: "",
     sort_order: 0,
   })
 
@@ -1352,6 +1358,9 @@ function CoursesTab() {
         duration_hours: course.duration_hours || 0,
         is_published: course.is_published,
         is_featured: course.is_featured || false,
+        is_orderbump: course.is_orderbump || false,
+        orderbump_price: course.orderbump_price || 0,
+        orderbump_description: course.orderbump_description || "",
         sort_order: course.sort_order,
       })
     } else {
@@ -1366,6 +1375,9 @@ function CoursesTab() {
         duration_hours: 0,
         is_published: false,
         is_featured: false,
+        is_orderbump: false,
+        orderbump_price: 0,
+        orderbump_description: "",
         sort_order: courses.length,
       })
     }
@@ -1585,7 +1597,48 @@ function CoursesTab() {
                   />
                   <Label htmlFor="is_featured">Somente VIP</Label>
                 </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="is_orderbump"
+                    checked={formData.is_orderbump}
+                    onCheckedChange={(checked) => setFormData({ ...formData, is_orderbump: checked })}
+                  />
+                  <Label htmlFor="is_orderbump" className="flex items-center gap-1">
+                    <Crown className="h-3 w-3 text-yellow-500" />
+                    Orderbump
+                  </Label>
+                </div>
               </div>
+
+              {formData.is_orderbump && (
+                <div className="p-4 border-2 border-yellow-500/30 bg-yellow-500/5 rounded-lg space-y-4">
+                  <p className="text-sm text-yellow-700 dark:text-yellow-400 font-medium">
+                    Configurações de Orderbump - Este curso será vendido separadamente
+                  </p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="orderbump_price">Preço (R$)</Label>
+                      <Input
+                        id="orderbump_price"
+                        type="number"
+                        step="0.01"
+                        value={formData.orderbump_price}
+                        onChange={(e) => setFormData({ ...formData, orderbump_price: parseFloat(e.target.value) || 0 })}
+                        placeholder="97.00"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="orderbump_description">Descrição do Orderbump</Label>
+                      <Input
+                        id="orderbump_description"
+                        value={formData.orderbump_description}
+                        onChange={(e) => setFormData({ ...formData, orderbump_description: e.target.value })}
+                        placeholder="Ex: Bônus especial"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>

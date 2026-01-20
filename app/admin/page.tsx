@@ -60,6 +60,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select" // Import Select components
 import { Dashboard } from "@/components/admin/dashboard" // Import Dashboard component
 import MonthlySalesManager from "@/components/admin/monthly-sales-manager" // Import MonthlySalesManager
+import { OrderbumpsManager } from "@/components/admin/orderbumps-manager" // Import OrderbumpsManager
 
 export default function AdminPage() {
   const router = useRouter()
@@ -109,6 +110,10 @@ export default function AdminPage() {
                     <TrendingUp className="h-4 w-4 shrink-0" />
                     <span className="text-xs sm:text-sm">Dashboard</span>
                   </TabsTrigger>
+                  <TabsTrigger value="orderbumps" className="flex items-center gap-2 whitespace-nowrap px-3 py-2">
+                    <Crown className="h-4 w-4 shrink-0" />
+                    <span className="text-xs sm:text-sm">Orderbumps</span>
+                  </TabsTrigger>
                 </div>
               </TabsList>
             </div>
@@ -139,6 +144,10 @@ export default function AdminPage() {
 
             <TabsContent value="dashboard">
               <Dashboard />
+            </TabsContent>
+
+            <TabsContent value="orderbumps">
+              <OrderbumpsManager />
             </TabsContent>
 
             {/* <TabsContent value="settings">
