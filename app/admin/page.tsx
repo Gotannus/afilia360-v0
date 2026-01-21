@@ -17,6 +17,7 @@ import { addProductToDb, updateProductInDb, deleteProductFromDb } from "@/lib/pr
 import type { Product } from "@/lib/products-data"
 import type { Affiliate } from "@/lib/types"
 import { CoursesAdmin } from "@/components/admin/courses-admin"
+import { UserOrderbumps } from "@/components/admin/user-orderbumps"
 import {
   Plus,
   Edit2,
@@ -60,7 +61,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select" // Import Select components
 import { Dashboard } from "@/components/admin/dashboard" // Import Dashboard component
 import MonthlySalesManager from "@/components/admin/monthly-sales-manager" // Import MonthlySalesManager
-import { OrderbumpsManager } from "@/components/admin/orderbumps-manager" // Import OrderbumpsManager
 
 export default function AdminPage() {
   const router = useRouter()
@@ -110,16 +110,32 @@ export default function AdminPage() {
                     <TrendingUp className="h-4 w-4 shrink-0" />
                     <span className="text-xs sm:text-sm">Dashboard</span>
                   </TabsTrigger>
-                  <TabsTrigger value="orderbumps" className="flex items-center gap-2 whitespace-nowrap px-3 py-2">
-                    <Crown className="h-4 w-4 shrink-0" />
-                    <span className="text-xs sm:text-sm">Orderbumps</span>
-                  </TabsTrigger>
                 </div>
               </TabsList>
             </div>
 
             <TabsContent value="affiliates">
               <UsersAdmin />
+            </TabsContent>
+
+            <TabsContent value="products">
+              <ProductsAdmin />
+            </TabsContent>
+
+            <TabsContent value="courses">
+              <CoursesAdmin />
+            </TabsContent>
+
+            <TabsContent value="ranking">
+              <RankingAdmin />
+            </TabsContent>
+
+            <TabsContent value="announcements">
+              <AnnouncementsAdmin />
+            </TabsContent>
+
+            <TabsContent value="dashboard">
+              <Dashboard />
             </TabsContent>
 
             <TabsContent value="products">
@@ -144,10 +160,6 @@ export default function AdminPage() {
 
             <TabsContent value="dashboard">
               <Dashboard />
-            </TabsContent>
-
-            <TabsContent value="orderbumps">
-              <OrderbumpsManager />
             </TabsContent>
 
             {/* <TabsContent value="settings">
@@ -1403,61 +1415,74 @@ function UsersAdmin() {
 
       {/* Dialog de Edição */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Editar Usuário: {editingUser?.name}</DialogTitle>
             <DialogDescription>Modifique as informações do usuário abaixo.</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div>
-              <Label htmlFor="edit-name" className="mb-1 block text-sm">
-                Nome
-              </Label>
-              <Input
-                id="edit-name"
-                value={editForm.name}
-                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                className="text-sm"
-              />
-            </div>
-            <div>
-              <Label htmlFor="edit-email" className="mb-1 block text-sm">
-                Email
-              </Label>
-              <Input
-                id="edit-email"
-                type="email"
-                value={editForm.email}
-                onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                className="text-sm"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-nome-celetus" className="text-sm">
-                Nome no Checkout Celetus
-              </Label>
-              <Input
-                id="edit-nome-celetus"
-                value={editForm.nome_celetus}
-                onChange={(e) => setEditForm({ ...editForm, nome_celetus: e.target.value })}
-                placeholder="Ex: JSM MARKETING"
-                className="text-sm"
-              />
-              <p className="text-xs text-muted-foreground">
-                ⚠️ Copie <strong>EXATAMENTE</strong> o nome que aparece nas vendas da Celetus. Isso vincula as comissões
-                automaticamente.
-              </p>
-            </div>
-          </div>
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={() => editingUser && updateUserInfo(editingUser.id)}>
-              <Save className="mr-2 h-4 w-4" />
-              Salvar
-            </Button>
-          </div>
+          
+          <Tabs defaultValue="info" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="info">Informações</TabsTrigger>
+              <TabsTrigger value="orderbumps">Orderbumps</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="info" className="space-y-4 py-4">
+              <div>
+                <Label htmlFor="edit-name" className="mb-1 block text-sm">
+                  Nome
+                </Label>
+                <Input
+                  id="edit-name"
+                  value={editForm.name}
+                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                  className="text-sm"
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-email" className="mb-1 block text-sm">
+                  Email
+                </Label>
+                <Input
+                  id="edit-email"
+                  type="email"
+                  value={editForm.email}
+                  onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                  className="text-sm"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-nome-celetus" className="text-sm">
+                  Nome no Checkout Celetus
+                </Label>
+                <Input
+                  id="edit-nome-celetus"
+                  value={editForm.nome_celetus}
+                  onChange={(e) => setEditForm({ ...editForm, nome_celetus: e.target.value })}
+                  placeholder="Ex: JSM MARKETING"
+                  className="text-sm"
+                />
+                <p className="text-xs text-muted-foreground">
+                  ⚠️ Copie <strong>EXATAMENTE</strong> o nome que aparece nas vendas da Celetus. Isso vincula as comissões
+                  automaticamente.
+                </p>
+              </div>
+              
+              <div className="flex justify-end gap-2 pt-4">
+                <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button onClick={() => editingUser && updateUserInfo(editingUser.id)}>
+                  <Save className="mr-2 h-4 w-4" />
+                  Salvar
+                </Button>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="orderbumps" className="py-4">
+              {editingUser && <UserOrderbumps userId={editingUser.id} />}
+            </TabsContent>
+          </Tabs>
         </DialogContent>
       </Dialog>
 

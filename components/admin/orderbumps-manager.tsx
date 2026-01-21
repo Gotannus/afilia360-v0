@@ -4,10 +4,11 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "@/hooks/use-toast"
-import { Trash2, Plus, Users } from "lucide-react"
+import { Trash2, Plus, Users, Search } from "lucide-react"
 
 interface Orderbump {
   id: string
@@ -41,6 +42,7 @@ export function OrderbumpsManager() {
   const [selectedCourse, setSelectedCourse] = useState("")
   const [notes, setNotes] = useState("")
   const [saving, setSaving] = useState(false)
+  const [userSearch, setUserSearch] = useState("")
 
   useEffect(() => {
     loadData()
@@ -50,11 +52,18 @@ export function OrderbumpsManager() {
     try {
       const response = await fetch("/api/orderbumps")
       const data = await response.json()
+      
+      console.log("[v0] Dados recebidos da API:", {
+        orderbumps: data.orderbumps?.length || 0,
+        users: data.users?.length || 0,
+        courses: data.courses?.length || 0,
+      })
+      
       setOrderbumps(data.orderbumps || [])
       setUsers(data.users || [])
       setCourses(data.courses || [])
     } catch (error) {
-      console.error("Erro ao carregar orderbumps:", error)
+      console.error("[v0] Erro ao carregar orderbumps:", error)
       toast({
         title: "Erro",
         description: "Erro ao carregar orderbumps",
@@ -148,6 +157,13 @@ export function OrderbumpsManager() {
     }
   }
 
+  // Filtrar usuários com base na busca
+  const filteredUsers = users.filter(
+    (user) =>
+      user.name.toLowerCase().includes(userSearch.toLowerCase()) ||
+      user.email.toLowerCase().includes(userSearch.toLowerCase()),
+  )
+
   if (loading) {
     return <div className="p-6">Carregando...</div>
   }
@@ -164,17 +180,30 @@ export function OrderbumpsManager() {
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="user">Usuário</Label>
+              <Label htmlFor="user">Usuário ({filteredUsers.length} encontrados)</Label>
+              <div className="relative mb-2">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar por nome ou email..."
+                  value={userSearch}
+                  onChange={(e) => setUserSearch(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
               <Select value={selectedUser} onValueChange={setSelectedUser}>
                 <SelectTrigger id="user">
                   <SelectValue placeholder="Selecione um usuário" />
                 </SelectTrigger>
-                <SelectContent>
-                  {users.map((user) => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.name} ({user.email})
-                    </SelectItem>
-                  ))}
+                <SelectContent className="max-h-[300px]">
+                  {filteredUsers.length === 0 ? (
+                    <div className="py-6 text-center text-sm text-muted-foreground">Nenhum usuário encontrado</div>
+                  ) : (
+                    filteredUsers.map((user) => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {user.name} ({user.email})
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>

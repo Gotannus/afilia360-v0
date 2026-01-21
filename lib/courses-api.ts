@@ -388,6 +388,27 @@ export async function getCourses(): Promise<Course[]> {
   return data || []
 }
 
+// Admin: Buscar cursos marcados como orderbump
+export async function getOrderbumpCourses(): Promise<Course[]> {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from("courses")
+    .select(`
+      *,
+      category:course_categories(*)
+    `)
+    .eq("is_orderbump", true)
+    .order("title", { ascending: true })
+
+  if (error) {
+    console.error("[v0] Erro ao buscar cursos orderbump:", error)
+    return []
+  }
+  
+  console.log("[v0] Cursos orderbump encontrados:", data?.length || 0)
+  return data || []
+}
+
 // Admin: Criar curso
 export async function createCourse(course: Partial<Course>): Promise<Course | null> {
   const supabase = createClient()
