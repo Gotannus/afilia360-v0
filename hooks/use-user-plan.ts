@@ -72,6 +72,22 @@ export function useUserPlan(): UserPlan {
       return false
     }
 
+    const supabase = createClient()
+
+    // PRIMEIRO: Verificar se tem acesso individual via orderbump
+    const { data: orderbumpAccess } = await supabase
+      .from("user_course_access")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("course_id", courseId)
+      .maybeSingle()
+
+    if (orderbumpAccess) {
+      console.log("[v0] Usuário tem acesso via orderbump ao curso:", courseId)
+      accessCache[courseId] = true
+      return true
+    }
+
     const planIdToCheck = plan?.id || BASIC_PLAN_ID
 
     // Verificar se o plano expirou
@@ -79,9 +95,7 @@ export function useUserPlan(): UserPlan {
       return false
     }
 
-    const supabase = createClient()
-
-    // Verificar se o plano tem acesso ao curso
+    // SEGUNDO: Verificar se o plano tem acesso ao curso
     const { data: access } = await supabase
       .from("plan_course_access")
       .select("id")
