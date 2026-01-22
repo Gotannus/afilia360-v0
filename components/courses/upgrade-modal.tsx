@@ -70,7 +70,7 @@ export function UpgradeModal({ open, onOpenChange, currentPlan, lockedCourseTitl
               </div>
               <div className="text-right">
                 <div className="text-4xl font-bold text-primary">R$ 97</div>
-                <div className="text-xs text-muted-foreground font-medium">por mês</div>
+                <div className="text-xs text-muted-foreground font-medium">por ano</div>
               </div>
             </div>
 

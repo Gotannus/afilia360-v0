@@ -359,10 +359,10 @@ export default function VipBenefitsPage() {
                 <span className="text-6xl font-black bg-gradient-to-r from-amber-500 to-yellow-500 bg-clip-text text-transparent">
                   R$ 97
                 </span>
-                <span className="text-2xl text-muted-foreground">/mês</span>
+                <span className="text-2xl text-muted-foreground">/ano</span>
               </div>
               <p className="text-sm text-muted-foreground">
-                ou <strong className="text-foreground">12x de R$ 9,70</strong>
+                ou <strong className="text-foreground">12x de R$ 9,70</strong> sem juros
               </p>
             </div>
 
