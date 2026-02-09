@@ -7,7 +7,7 @@ import { useRouter, usePathname } from "next/navigation"
 import { getSession } from "@/lib/auth"
 import { Loader2 } from "lucide-react"
 
-const publicRoutes = ["/login", "/cadastro", "/admin", "/aula-gratuita", "/sobre", "/enviar-produto"]
+const publicRoutes = ["/", "/login", "/cadastro", "/admin", "/aula-gratuita", "/sobre", "/enviar-produto"]
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const [isChecking, setIsChecking] = useState(true)
