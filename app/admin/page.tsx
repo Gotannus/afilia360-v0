@@ -55,6 +55,7 @@ import {
   ChevronDown,
   GripVertical,
   ArrowLeft,
+  Download,
 } from "lucide-react"
 import type React from "react" // Import React for JSXElement[]
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card" // Import Card components
@@ -1356,6 +1357,61 @@ function UsersAdmin() {
   const totalUsers = affiliates.length
   const totalVip = affiliates.filter((a) => a.is_vip).length
 
+  const exportToCSV = () => {
+    console.log("[v0] Iniciando exportação CSV de usuários")
+    
+    // Cabeçalhos do CSV
+    const headers = [
+      "Nome",
+      "Email",
+      "WhatsApp",
+      "Status",
+      "VIP",
+      "Plano",
+      "Nome Celetus",
+      "Data de Cadastro",
+      "Primeira Venda",
+      "Total de Comissões",
+      "Onboarding Completo"
+    ]
+    
+    // Dados dos afiliados
+    const rows = filteredAffiliates.map((affiliate) => [
+      affiliate.name || "",
+      affiliate.email || "",
+      affiliate.whatsapp || "",
+      affiliate.status || "",
+      affiliate.is_vip ? "Sim" : "Não",
+      affiliate.plan_purchased || "",
+      affiliate.nome_celetus || "",
+      affiliate.created_at ? new Date(affiliate.created_at).toLocaleDateString("pt-BR") : "",
+      affiliate.first_sale_date ? new Date(affiliate.first_sale_date).toLocaleDateString("pt-BR") : "",
+      affiliate.total_commissions ? `R$ ${Number(affiliate.total_commissions).toFixed(2)}` : "R$ 0,00",
+      affiliate.onboarding_completed ? "Sim" : "Não"
+    ])
+    
+    // Criar conteúdo CSV
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(","))
+    ].join("\n")
+    
+    // Criar blob e fazer download
+    const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" })
+    const link = document.createElement("a")
+    const url = URL.createObjectURL(blob)
+    
+    link.setAttribute("href", url)
+    link.setAttribute("download", `afiliados_${new Date().toISOString().split("T")[0]}.csv`)
+    link.style.visibility = "hidden"
+    
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    
+    console.log("[v0] Exportação CSV concluída:", rows.length, "usuários")
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
@@ -1381,6 +1437,10 @@ function UsersAdmin() {
           </div>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <Button onClick={exportToCSV} variant="outline" className="gap-2 w-full sm:w-auto">
+            <Download className="h-4 w-4" />
+            Exportar Lista ({filteredAffiliates.length})
+          </Button>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
