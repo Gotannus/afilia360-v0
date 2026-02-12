@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
-import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { createClient } from "@/lib/supabase/client"
 import { createBrowserClient } from "@supabase/ssr" // Import added for Supabase client in announcements
@@ -396,9 +395,9 @@ function ProductsAdmin() {
   return (
     <div className="space-y-4 md:space-y-6">
       {errorMessage && (
-        <Alert variant="destructive">
-          <AlertDescription>{errorMessage}</AlertDescription>
-        </Alert>
+        <div className="bg-destructive/15 border border-destructive text-destructive px-4 py-3 rounded-lg">
+          <p className="text-sm">{errorMessage}</p>
+        </div>
       )}
       <div className="grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-3">
         <Card className="border-green-500/30 bg-green-500/5">
