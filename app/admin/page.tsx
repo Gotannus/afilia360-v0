@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { createClient } from "@/lib/supabase/client"
 import { createBrowserClient } from "@supabase/ssr" // Import added for Supabase client in announcements
@@ -181,6 +182,7 @@ function ProductsAdmin() {
   const [saving, setSaving] = useState(false)
   const [isAdding, setIsAdding] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const moveProduct = async (index: number, direction: "up" | "down") => {
     const newProducts = [...products]
@@ -319,7 +321,11 @@ function ProductsAdmin() {
   }
 
   const handleAdd = async () => {
-    if (!newProduct.title) return
+    if (!newProduct.title) {
+      setErrorMessage("O título do produto é obrigatório")
+      return
+    }
+    setErrorMessage(null)
     setSaving(true)
     console.log("[v0] Salvando produto:", {
       title: newProduct.title,
@@ -334,12 +340,14 @@ function ProductsAdmin() {
       setIsAdding(false)
     } else {
       console.error("[v0] Falha ao adicionar produto")
+      setErrorMessage("Erro ao adicionar produto. Verifique o console para mais detalhes.")
     }
     setSaving(false)
   }
 
   const handleUpdate = async () => {
     if (!editProduct) return
+    setErrorMessage(null)
     setSaving(true)
     console.log("[v0] Atualizando produto:", {
       id: editProduct.id,
@@ -354,18 +362,22 @@ function ProductsAdmin() {
       setEditProduct(null)
     } else {
       console.error("[v0] Falha ao atualizar produto")
+      setErrorMessage("Erro ao atualizar produto. Verifique o console para mais detalhes.")
     }
     setSaving(false)
   }
 
   const handleDelete = async (id: string) => {
     if (!confirm("Tem certeza que deseja excluir este produto?")) return
+    setErrorMessage(null)
     const deleted = await deleteProductFromDb(id)
     if (deleted) {
       const remainingProducts = products.filter((p) => p.id !== id)
       setProducts(remainingProducts)
       // Reordenar os produtos restantes após a exclusão
       await updateProductOrder(remainingProducts)
+    } else {
+      setErrorMessage("Erro ao deletar produto. Verifique o console para mais detalhes.")
     }
   }
 
@@ -383,6 +395,11 @@ function ProductsAdmin() {
 
   return (
     <div className="space-y-4 md:space-y-6">
+      {errorMessage && (
+        <Alert variant="destructive">
+          <AlertDescription>{errorMessage}</AlertDescription>
+        </Alert>
+      )}
       <div className="grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-3">
         <Card className="border-green-500/30 bg-green-500/5">
           <CardHeader className="pb-2 md:pb-3">
