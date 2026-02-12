@@ -55,6 +55,7 @@ import {
   ChevronDown,
   GripVertical,
   ArrowLeft,
+  Download,
 } from "lucide-react"
 import type React from "react" // Import React for JSXElement[]
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card" // Import Card components
@@ -180,6 +181,7 @@ function ProductsAdmin() {
   const [saving, setSaving] = useState(false)
   const [isAdding, setIsAdding] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const moveProduct = async (index: number, direction: "up" | "down") => {
     const newProducts = [...products]
@@ -318,7 +320,11 @@ function ProductsAdmin() {
   }
 
   const handleAdd = async () => {
-    if (!newProduct.title) return
+    if (!newProduct.title) {
+      setErrorMessage("O título do produto é obrigatório")
+      return
+    }
+    setErrorMessage(null)
     setSaving(true)
     console.log("[v0] Salvando produto:", {
       title: newProduct.title,
@@ -333,12 +339,14 @@ function ProductsAdmin() {
       setIsAdding(false)
     } else {
       console.error("[v0] Falha ao adicionar produto")
+      setErrorMessage("Erro ao adicionar produto. Verifique o console para mais detalhes.")
     }
     setSaving(false)
   }
 
   const handleUpdate = async () => {
     if (!editProduct) return
+    setErrorMessage(null)
     setSaving(true)
     console.log("[v0] Atualizando produto:", {
       id: editProduct.id,
@@ -353,18 +361,22 @@ function ProductsAdmin() {
       setEditProduct(null)
     } else {
       console.error("[v0] Falha ao atualizar produto")
+      setErrorMessage("Erro ao atualizar produto. Verifique o console para mais detalhes.")
     }
     setSaving(false)
   }
 
   const handleDelete = async (id: string) => {
     if (!confirm("Tem certeza que deseja excluir este produto?")) return
+    setErrorMessage(null)
     const deleted = await deleteProductFromDb(id)
     if (deleted) {
       const remainingProducts = products.filter((p) => p.id !== id)
       setProducts(remainingProducts)
       // Reordenar os produtos restantes após a exclusão
       await updateProductOrder(remainingProducts)
+    } else {
+      setErrorMessage("Erro ao deletar produto. Verifique o console para mais detalhes.")
     }
   }
 
@@ -382,6 +394,11 @@ function ProductsAdmin() {
 
   return (
     <div className="space-y-4 md:space-y-6">
+      {errorMessage && (
+        <div className="bg-destructive/15 border border-destructive text-destructive px-4 py-3 rounded-lg">
+          <p className="text-sm">{errorMessage}</p>
+        </div>
+      )}
       <div className="grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-3">
         <Card className="border-green-500/30 bg-green-500/5">
           <CardHeader className="pb-2 md:pb-3">
@@ -1356,6 +1373,61 @@ function UsersAdmin() {
   const totalUsers = affiliates.length
   const totalVip = affiliates.filter((a) => a.is_vip).length
 
+  const exportToCSV = () => {
+    console.log("[v0] Iniciando exportação CSV de usuários")
+    
+    // Cabeçalhos do CSV
+    const headers = [
+      "Nome",
+      "Email",
+      "WhatsApp",
+      "Status",
+      "VIP",
+      "Plano",
+      "Nome Celetus",
+      "Data de Cadastro",
+      "Primeira Venda",
+      "Total de Comissões",
+      "Onboarding Completo"
+    ]
+    
+    // Dados dos afiliados
+    const rows = filteredAffiliates.map((affiliate) => [
+      affiliate.name || "",
+      affiliate.email || "",
+      affiliate.whatsapp || "",
+      affiliate.status || "",
+      affiliate.is_vip ? "Sim" : "Não",
+      affiliate.plan_purchased || "",
+      affiliate.nome_celetus || "",
+      affiliate.created_at ? new Date(affiliate.created_at).toLocaleDateString("pt-BR") : "",
+      affiliate.first_sale_date ? new Date(affiliate.first_sale_date).toLocaleDateString("pt-BR") : "",
+      affiliate.total_commissions ? `R$ ${Number(affiliate.total_commissions).toFixed(2)}` : "R$ 0,00",
+      affiliate.onboarding_completed ? "Sim" : "Não"
+    ])
+    
+    // Criar conteúdo CSV
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(","))
+    ].join("\n")
+    
+    // Criar blob e fazer download
+    const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" })
+    const link = document.createElement("a")
+    const url = URL.createObjectURL(blob)
+    
+    link.setAttribute("href", url)
+    link.setAttribute("download", `afiliados_${new Date().toISOString().split("T")[0]}.csv`)
+    link.style.visibility = "hidden"
+    
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    
+    console.log("[v0] Exportação CSV concluída:", rows.length, "usuários")
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
@@ -1381,6 +1453,10 @@ function UsersAdmin() {
           </div>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <Button onClick={exportToCSV} variant="outline" className="gap-2 w-full sm:w-auto">
+            <Download className="h-4 w-4" />
+            Exportar Lista ({filteredAffiliates.length})
+          </Button>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input

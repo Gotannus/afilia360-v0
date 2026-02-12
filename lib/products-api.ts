@@ -63,6 +63,7 @@ function productToDb(product: Omit<Product, "id"> & { id?: string }) {
     cpa_alvo: product.metrics?.cpaAlvo || null,
     vip_only: product.vipOnly || false,
     coming_soon: product.comingSoon || false,
+    validated: true, // Define como validado por padrão
   }
 }
 
@@ -89,42 +90,57 @@ export async function fetchProducts(): Promise<Product[]> {
 }
 
 export async function addProductToDb(product: Omit<Product, "id">): Promise<Product | null> {
+  console.log("[v0] Tentando adicionar produto:", product.title)
   const supabase = createClient()
-  const { data, error } = await supabase.from("marketplace_products").insert(productToDb(product)).select().single()
+  const productData = productToDb(product)
+  console.log("[v0] Dados do produto convertidos para DB:", productData)
+  
+  const { data, error } = await supabase.from("marketplace_products").insert(productData).select().single()
 
   if (error) {
-    console.error("Erro ao adicionar produto:", error)
+    console.error("[v0] Erro ao adicionar produto:", error)
+    console.error("[v0] Detalhes do erro:", JSON.stringify(error, null, 2))
     return null
   }
 
+  console.log("[v0] Produto adicionado com sucesso!")
   return dbToProduct(data)
 }
 
 export async function updateProductInDb(id: string, product: Partial<Product>): Promise<Product | null> {
+  console.log("[v0] Tentando atualizar produto:", id, product.title)
   const supabase = createClient()
+  const productData = productToDb(product as Product)
+  console.log("[v0] Dados do produto convertidos para atualização:", productData)
+  
   const { data, error } = await supabase
     .from("marketplace_products")
-    .update(productToDb(product as Product))
+    .update(productData)
     .eq("id", id)
     .select()
     .single()
 
   if (error) {
-    console.error("Erro ao atualizar produto:", error)
+    console.error("[v0] Erro ao atualizar produto:", error)
+    console.error("[v0] Detalhes do erro:", JSON.stringify(error, null, 2))
     return null
   }
 
+  console.log("[v0] Produto atualizado com sucesso!")
   return dbToProduct(data)
 }
 
 export async function deleteProductFromDb(id: string): Promise<boolean> {
+  console.log("[v0] Tentando deletar produto:", id)
   const supabase = createClient()
   const { error } = await supabase.from("marketplace_products").delete().eq("id", id)
 
   if (error) {
-    console.error("Erro ao deletar produto:", error)
+    console.error("[v0] Erro ao deletar produto:", error)
+    console.error("[v0] Detalhes do erro:", JSON.stringify(error, null, 2))
     return false
   }
 
+  console.log("[v0] Produto deletado com sucesso!")
   return true
 }
