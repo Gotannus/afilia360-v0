@@ -20,6 +20,7 @@ function dbToProduct(row: any): Product {
     rating: Number(row.rating) || 0,
     badge: row.badge,
     affiliateUrl: row.affiliate_url,
+    hotmartUrl: row.hotmart_url || undefined,
     driveUrl: row.drive_url,
     category: row.category,
     orderbumps: row.orderbumps || 0,
@@ -53,6 +54,7 @@ function productToDb(product: Omit<Product, "id"> & { id?: string }) {
     rating: product.rating || 0,
     badge: product.badge || null,
     affiliate_url: product.affiliateUrl,
+    hotmart_url: product.hotmartUrl || null,
     drive_url: product.driveUrl || null,
     category: product.category || null,
     orderbumps: product.orderbumps || 0,
@@ -67,26 +69,77 @@ function productToDb(product: Omit<Product, "id"> & { id?: string }) {
   }
 }
 
+// Cache de produtos em memória (5 minutos)
+let productsCache: { data: Product[]; timestamp: number } | null = null
+const CACHE_DURATION = 5 * 60 * 1000 // 5 minutos
+
 export async function fetchProducts(): Promise<Product[]> {
+  // Verificar cache
+  if (productsCache && Date.now() - productsCache.timestamp < CACHE_DURATION) {
+    console.log("[v0] Usando produtos do cache")
+    return productsCache.data
+  }
+
   const supabase = createClient()
+  
+  // Selecionar apenas os campos necessários para reduzir egress
   const { data, error } = await supabase
     .from("marketplace_products")
-    .select("*")
+    .select(`
+      id,
+      title,
+      image,
+      tag,
+      tag_label,
+      nicho,
+      comissao,
+      ticket,
+      estrategia,
+      plataforma,
+      formato,
+      aulas,
+      vendas,
+      rating,
+      badge,
+      affiliate_url,
+      hotmart_url,
+      drive_url,
+      category,
+      orderbumps,
+      upsell_status,
+      release_date,
+      cpc_medio,
+      checkout,
+      cpa_alvo,
+      vip_only,
+      coming_soon,
+      display_order
+    `)
     .eq("validated", true)
     .order("display_order", { ascending: true })
     .order("created_at", { ascending: true })
 
   if (error) {
-    console.error("Erro ao buscar produtos:", error)
+    console.error("Erro ao buscar produtos:", error.message)
+    // Retornar cache antigo se disponível
+    if (productsCache) {
+      console.log("[v0] Usando cache antigo devido ao erro")
+      return productsCache.data
+    }
     return []
   }
 
-  console.log(
-    "[v0] Produtos carregados do banco:",
-    data.map((p) => ({ title: p.title, display_order: p.display_order })),
-  )
+  const products = data.map(dbToProduct)
+  
+  // Atualizar cache
+  productsCache = {
+    data: products,
+    timestamp: Date.now()
+  }
 
-  return data.map(dbToProduct)
+  console.log("[v0] Produtos carregados do banco:", products.length)
+
+  return products
 }
 
 export async function addProductToDb(product: Omit<Product, "id">): Promise<Product | null> {
