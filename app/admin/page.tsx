@@ -220,7 +220,8 @@ function ProductsAdmin() {
     nicho: "",
     comissao: "",
     ticket: "",
-    affiliateUrl: "",
+      affiliateUrl: "",
+      hotmartUrl: "",
     driveUrl: "",
     vendas: 0,
     rating: 5,
@@ -276,7 +277,8 @@ function ProductsAdmin() {
       nicho: product.nicho || "",
       comissao: product.comissao || "",
       ticket: product.ticket || "",
-      affiliateUrl: product.affiliate_url || "", // Corrigido de affiliate_link para affiliate_url
+      affiliateUrl: product.affiliate_url || "",
+      hotmartUrl: product.hotmart_url || "",
       driveUrl: product.drive_url || "", // Corrigido de drive_link para drive_url
       vendas: product.vendas || 0,
       rating: product.rating || 5,
@@ -485,11 +487,20 @@ function ProductsAdmin() {
               />
             </div>
             <div className="sm:col-span-2">
-              <Label className="mb-1 block text-xs md:text-sm">Link de Afiliação</Label>
+              <Label className="mb-1 block text-xs md:text-sm">Link de Afiliação (Celetus)</Label>
               <Input
                 value={newProduct.affiliateUrl}
                 onChange={(e) => setNewProduct({ ...newProduct, affiliateUrl: e.target.value })}
-                placeholder="https://..."
+                placeholder="https://celetus.com/..."
+                className="text-sm"
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <Label className="mb-1 block text-xs md:text-sm">Link de Afiliação (Hotmart)</Label>
+              <Input
+                value={newProduct.hotmartUrl || ""}
+                onChange={(e) => setNewProduct({ ...newProduct, hotmartUrl: e.target.value })}
+                placeholder="https://hotmart.com/..."
                 className="text-sm"
               />
             </div>
@@ -793,10 +804,20 @@ function ProductsAdmin() {
                   />
                 </div>
                 <div className="sm:col-span-2">
+                  <Label className="mb-1 block text-xs text-muted-foreground">Link Celetus</Label>
                   <Input
                     value={editProduct.affiliateUrl}
                     onChange={(e) => setEditProduct({ ...editProduct, affiliateUrl: e.target.value })}
-                    placeholder="Link Afiliação"
+                    placeholder="Link Afiliação Celetus"
+                    className="text-sm"
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <Label className="mb-1 block text-xs text-muted-foreground">Link Hotmart</Label>
+                  <Input
+                    value={editProduct.hotmartUrl || ""}
+                    onChange={(e) => setEditProduct({ ...editProduct, hotmartUrl: e.target.value })}
+                    placeholder="Link Afiliação Hotmart"
                     className="text-sm"
                   />
                 </div>

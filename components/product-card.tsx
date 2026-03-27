@@ -15,6 +15,7 @@ import {
   Link2,
   PlayCircle,
   Lock,
+  Store,
 } from "lucide-react"
 import type { Product } from "@/lib/products-data"
 import { cn } from "@/lib/utils"
@@ -191,6 +192,24 @@ export function ProductCard({ product }: ProductCardProps) {
                 <span className="text-xl font-bold text-yellow-400">EM BREVE</span>
                 <span className="text-sm text-white/80">Aguarde novidades!</span>
               </div>
+            </div>
+          )}
+
+          {/* Badges de plataforma na capa */}
+          {!isComingSoon && (product.affiliateUrl || product.hotmartUrl) && (
+            <div className="absolute bottom-2 left-2 flex flex-wrap gap-1">
+              {product.affiliateUrl && (
+                <span className="flex items-center gap-1 rounded-full bg-black/70 backdrop-blur-sm border border-emerald-500/50 px-2 py-0.5 text-[10px] font-semibold text-emerald-400">
+                  <Store className="h-2.5 w-2.5" />
+                  Celetus
+                </span>
+              )}
+              {product.hotmartUrl && (
+                <span className="flex items-center gap-1 rounded-full bg-black/70 backdrop-blur-sm border border-red-500/50 px-2 py-0.5 text-[10px] font-semibold text-red-400">
+                  <Store className="h-2.5 w-2.5" />
+                  Hotmart
+                </span>
+              )}
             </div>
           )}
 
@@ -382,7 +401,7 @@ export function ProductCard({ product }: ProductCardProps) {
               <ExternalLink className="h-4 w-4 text-emerald-400" />
             </a>
 
-            {/* Opção 2: Já tem conta - afiliar */}
+            {/* Opção 2: Já tem conta Celetus - afiliar */}
             <a
               href={product.affiliateUrl}
               target="_blank"
@@ -398,6 +417,25 @@ export function ProductCard({ product }: ProductCardProps) {
               </div>
               <ExternalLink className="h-4 w-4 text-primary" />
             </a>
+
+            {/* Opção Hotmart - só aparece se tiver link */}
+            {product.hotmartUrl && (
+              <a
+                href={product.hotmartUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-4 rounded-lg border border-red-500/30 bg-red-500/10 p-4 transition-all hover:bg-red-500/20 hover:border-red-500/50"
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-500/20">
+                  <Store className="h-5 w-5 text-red-400" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-semibold text-white">Afiliar pela Hotmart</h4>
+                  <p className="text-sm text-gray-400">Afiliar-se ao produto na Hotmart</p>
+                </div>
+                <ExternalLink className="h-4 w-4 text-red-400" />
+              </a>
+            )}
 
             {/* Divisor */}
             <div className="relative py-2">

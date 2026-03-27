@@ -23,6 +23,7 @@ export interface Product {
   rating?: number
   badge?: "bestseller" | "novo" | "trending"
   affiliateUrl: string
+  hotmartUrl?: string
   driveUrl?: string
   category?: string
   orderbumps?: number
