@@ -183,42 +183,6 @@
 }
 
 @layer utilities {
-  .premium-surface {
-    background: var(--gradient-surface-premium);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: var(--radius-premium);
-    box-shadow: var(--shadow-lux-md);
-    backdrop-filter: blur(14px);
-  }
-
-  .premium-hero {
-    background: var(--gradient-hero-premium);
-    border-radius: calc(var(--radius-premium) + 0.25rem);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    box-shadow: var(--shadow-lux-lg);
-  }
-
-  .premium-title-hero {
-    font-size: var(--title-content-hero);
-    line-height: 1.08;
-    letter-spacing: -0.02em;
-    font-weight: 700;
-  }
-
-  .premium-title-section {
-    font-size: var(--title-content-section);
-    line-height: 1.16;
-    letter-spacing: -0.015em;
-    font-weight: 650;
-  }
-
-  .premium-title-card {
-    font-size: var(--title-content-card);
-    line-height: 1.3;
-    letter-spacing: -0.01em;
-    font-weight: 600;
-  }
-
   .brand-surface {
     background: linear-gradient(140deg, rgba(24, 24, 27, 0.86), rgba(15, 23, 42, 0.82));
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -227,13 +191,6 @@
 
   .brand-highlight {
     background: linear-gradient(90deg, rgba(99, 102, 241, 0.28), rgba(14, 165, 233, 0.28), rgba(168, 85, 247, 0.24));
-  }
-
-  .brand-hero {
-    min-height: clamp(18rem, 46vw, 25rem);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.12),
-      0 20px 70px rgba(0, 0, 0, 0.45);
   }
 
   /* Velocidade 1s no mobile (era 2.5s) */
