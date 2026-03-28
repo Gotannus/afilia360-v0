@@ -35,26 +35,24 @@ export default async function AvisoDetalhePage({ params }: { params: Promise<{ s
     year: "numeric",
   })
 
-  return (
-    <main className="pb-10">
-      <section className="relative left-1/2 right-1/2 -mx-[50vw] mb-10 w-screen overflow-hidden">
-        <div className="relative h-[44vh] min-h-[300px] w-full sm:h-[56vh] sm:min-h-[420px]">
-          <Image src={post.coverImage || "/placeholder.jpg"} alt={post.title} fill priority className="object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/10 via-background/45 to-background/95" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(56,189,248,0.20),transparent_42%),radial-gradient(circle_at_75%_18%,rgba(168,85,247,0.18),transparent_36%)]" />
+      <article className="premium-surface p-6 sm:p-8">
+        <div className="brand-highlight mb-4 h-1 w-24 rounded-full" />
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <Badge variant="outline">{typeLabel[post.category] || "Aviso"}</Badge>
+          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+            <CalendarDays className="h-3.5 w-3.5" />
+            {new Date(post.publishedAt).toLocaleDateString("pt-BR")}
+          </span>
         </div>
       </section>
 
-      <div className="mx-auto w-full max-w-4xl px-4 sm:px-6">
-        <Link href="/avisos">
-          <Button variant="ghost" className="mb-4 gap-1 px-2">
-            <ChevronLeft className="h-4 w-4" />
-            Voltar para avisos
-          </Button>
-        </Link>
+        <h1 className="premium-title-hero">{post.title}</h1>
 
-        <article className="brand-surface -mt-32 rounded-2xl p-6 shadow-2xl shadow-black/30 ring-1 ring-white/10 backdrop-blur-md sm:p-8">
-          <div className="brand-highlight mb-5 h-1 w-24 rounded-full" />
+        {post.coverImage && (
+          <div className="relative mt-6 h-64 w-full overflow-hidden rounded-[var(--radius-premium)] border border-border sm:h-80">
+            <Image src={post.coverImage || "/placeholder.jpg"} alt={post.title} fill className="object-cover" />
+          </div>
+        )}
 
           <header>
             <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">{post.title}</h1>

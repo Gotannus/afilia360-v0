@@ -42,48 +42,19 @@ export default async function AvisosPage({ searchParams }: AvisosPageProps) {
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6">
-      <header className="brand-surface brand-hero relative mb-8 overflow-hidden rounded-2xl border border-white/10">
-        {featuredPost?.coverImage && (
-          <img
-            src={featuredPost.coverImage}
-            alt={featuredPost.title}
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/60 to-black/25" />
-        <div className="relative z-10 p-6 sm:p-8">
-          <Link href="/" className="mb-5 inline-flex items-center gap-1 text-xs text-white/75 transition-colors hover:text-white">
-            <ArrowLeft className="h-3.5 w-3.5" />
-            Voltar para plataforma
-          </Link>
-          <div className="mb-4 flex items-center gap-3">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/40 px-3 py-1 text-xs font-medium text-white/90">
-              <Megaphone className="h-3.5 w-3.5 text-white/85" />
-              Novidades Afilia360
-            </span>
-            <div className="brand-highlight h-1 w-16 rounded-full" />
-          </div>
-          <h1 className="max-w-2xl text-3xl font-bold tracking-tight text-white sm:text-4xl">
-            Blog de Avisos Afilia360
-            <span className="mt-1 block text-white/85">Atualizações importantes para você vender mais</span>
-          </h1>
-          <p className="mt-3 max-w-2xl text-sm text-white/80 sm:text-base">
-            Todas as novidades da plataforma em um único lugar: atualizações, promoções, comunicados e alertas.
-          </p>
-          <div className="mt-6 flex flex-wrap gap-2">
-            <Link href={featuredPost ? `/avisos/${featuredPost.slug}` : "#lista-avisos"}>
-              <Button size="sm" className="gap-2">
-                Ler destaque
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-            <Link href="#lista-avisos">
-              <Button size="sm" variant="outline" className="border-white/20 bg-white/5 text-white hover:bg-white/10">
-                Ver todos os avisos
-              </Button>
-            </Link>
-          </div>
+      <header className="premium-hero mb-8 overflow-hidden p-6 sm:p-8">
+        <div className="brand-highlight mb-4 h-1 w-24 rounded-full" />
+        <Link href="/" className="mb-4 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Voltar para plataforma
+        </Link>
+        <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary/15 ring-1 ring-primary/30">
+          <Megaphone className="h-5 w-5 text-primary" />
         </div>
+        <h1 className="premium-title-hero">Blog de Avisos do Afilia360</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Todas as novidades da plataforma em um único lugar: atualizações, promoções, comunicados e alertas.
+        </p>
       </header>
 
       {!featuredPost && listPosts.length === 0 ? (
@@ -91,21 +62,22 @@ export default async function AvisosPage({ searchParams }: AvisosPageProps) {
           Nenhum artigo publicado ainda.
         </div>
       ) : (
-        <div className="space-y-8">
-          <section className="space-y-3">
-            <h2 className="text-lg font-semibold tracking-tight">Post em destaque</h2>
-            {featuredPost ? (
-              <article className="brand-surface rounded-xl p-5 transition-transform duration-200 hover:-translate-y-0.5">
-                <div className="mb-3 flex flex-wrap items-center gap-2">
-                  <Badge variant="outline">{typeLabel[featuredPost.category] || "Aviso"}</Badge>
-                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                    <CalendarDays className="h-3.5 w-3.5" />
-                    {new Date(featuredPost.publishedAt).toLocaleDateString("pt-BR")}
-                  </span>
-                </div>
+        <div className="space-y-4">
+          {posts.map((post) => (
+            <article
+              key={post.id}
+              className="premium-surface p-5 transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-lux-lg)]"
+            >
+              <div className="mb-3 flex flex-wrap items-center gap-2">
+                <Badge variant="outline">{typeLabel[post.category] || "Aviso"}</Badge>
+                <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                  <CalendarDays className="h-3.5 w-3.5" />
+                  {new Date(post.publishedAt).toLocaleDateString("pt-BR")}
+                </span>
+              </div>
 
-                <h3 className="text-xl font-semibold">{featuredPost.title}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{featuredPost.excerpt}</p>
+              <h2 className="premium-title-card">{post.title}</h2>
+              <p className="mt-2 text-sm text-muted-foreground">{post.excerpt}</p>
 
                 <div className="mt-4 flex flex-wrap gap-2">
                   <Link href={`/avisos/${featuredPost.slug}`}>
