@@ -2288,9 +2288,30 @@ function RankingAdmin() {
 }
 
 function AnnouncementsAdmin() {
+  type PublicationStatus = "draft" | "published"
+
+  const formatDateTimeLocal = (value: Date) => {
+    const offset = value.getTimezoneOffset()
+    const localDate = new Date(value.getTime() - offset * 60 * 1000)
+    return localDate.toISOString().slice(0, 16)
+  }
+
+  const slugifyAnnouncement = (value: string) =>
+    value
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)+/g, "")
+
   const [announcements, setAnnouncements] = useState<any[]>([])
   const [isAdding, setIsAdding] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
+  const [formError, setFormError] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [savedPostSlug, setSavedPostSlug] = useState<string | null>(null)
+  const [savedPublicationStatus, setSavedPublicationStatus] = useState<PublicationStatus | null>(null)
   const [newAnnouncement, setNewAnnouncement] = useState({
     title: "",
     message: "",
@@ -2300,6 +2321,8 @@ function AnnouncementsAdmin() {
     linkUrl: "",
     slug: "",
     type: "info" as "info" | "promo" | "update" | "alert",
+    publicationStatus: "draft" as PublicationStatus,
+    publishedAt: formatDateTimeLocal(new Date()),
     active: true,
   })
 
@@ -2312,6 +2335,15 @@ function AnnouncementsAdmin() {
     fetchAnnouncements()
   }, [])
 
+  useEffect(() => {
+    if (slugManuallyEdited) return
+
+    setNewAnnouncement((prev) => ({
+      ...prev,
+      slug: slugifyAnnouncement(prev.title),
+    }))
+  }, [newAnnouncement.title, slugManuallyEdited])
+
   const fetchAnnouncements = async () => {
     setLoading(true)
     const { data, error } = await supabase.from("announcements").select("*").order("created_at", { ascending: false })
@@ -2323,19 +2355,50 @@ function AnnouncementsAdmin() {
   }
 
   const handleAdd = async () => {
-    if (!newAnnouncement.title && !newAnnouncement.message && !newAnnouncement.content) return
+    setFormError(null)
+    setSaving(true)
+
+    const title = newAnnouncement.title.trim()
+    const excerpt = newAnnouncement.excerpt.trim()
+    const content = newAnnouncement.content.trim()
+    const manualSlug = slugifyAnnouncement(newAnnouncement.slug.trim())
+    const finalSlug = manualSlug || slugifyAnnouncement(title)
+
+    if (!title || !excerpt || !content) {
+      setFormError("Preencha os campos obrigatórios: título, resumo e conteúdo.")
+      setSaving(false)
+      return
+    }
+
+    if (content.length < 40) {
+      setFormError("O conteúdo está muito curto. Adicione pelo menos 40 caracteres.")
+      setSaving(false)
+      return
+    }
+
+    if (!finalSlug) {
+      setFormError("Não foi possível gerar um slug válido. Ajuste o título ou informe o slug manualmente.")
+      setSaving(false)
+      return
+    }
 
     const textFallback = newAnnouncement.message || newAnnouncement.excerpt || newAnnouncement.title
+    const publishedAt =
+      newAnnouncement.publicationStatus === "published" && newAnnouncement.publishedAt
+        ? new Date(newAnnouncement.publishedAt).toISOString()
+        : null
 
     const { error } = await supabase.from("announcements").insert({
-      title: newAnnouncement.title || null,
+      title,
       text: textFallback,
-      excerpt: newAnnouncement.excerpt || null,
-      content: newAnnouncement.content || null,
+      excerpt,
+      content,
       cover_url: newAnnouncement.coverUrl || null,
       link_url: newAnnouncement.linkUrl || null,
-      slug: newAnnouncement.slug || null,
+      slug: finalSlug,
       type: newAnnouncement.type,
+      publication_status: newAnnouncement.publicationStatus,
+      published_at: publishedAt,
       active: newAnnouncement.active,
     })
 
@@ -2349,11 +2412,20 @@ function AnnouncementsAdmin() {
         linkUrl: "",
         slug: "",
         type: "info",
+        publicationStatus: "draft",
+        publishedAt: formatDateTimeLocal(new Date()),
         active: true,
       })
+      setSlugManuallyEdited(false)
+      setSavedPostSlug(finalSlug)
+      setSavedPublicationStatus(newAnnouncement.publicationStatus)
       setIsAdding(false)
       fetchAnnouncements()
+    } else {
+      setFormError(error.message)
     }
+
+    setSaving(false)
   }
 
   const handleToggleActive = async (id: string, currentActive: boolean) => {
@@ -2384,120 +2456,195 @@ function AnnouncementsAdmin() {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-xl font-semibold">Gerenciar Avisos</h2>
-        <Button onClick={() => setIsAdding(!isAdding)} className="gap-2">
+        <Button
+          onClick={() => {
+            setIsAdding(!isAdding)
+            setFormError(null)
+          }}
+          className="gap-2"
+        >
           <Plus className="h-4 w-4" />
           Novo Aviso
         </Button>
       </div>
 
+      {savedPostSlug && savedPublicationStatus === "published" && (
+        <div className="mb-4 rounded-lg border border-emerald-500/40 bg-emerald-500/10 p-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-emerald-200">Post salvo com sucesso.</p>
+            <Link href={`/avisos/${savedPostSlug}`} target="_blank" rel="noreferrer">
+              <Button size="sm" variant="outline" className="gap-2 bg-transparent">
+                <Eye className="h-4 w-4" />
+                Visualizar no blog
+              </Button>
+            </Link>
+          </div>
+        </div>
+      )}
+
       {isAdding && (
         <div className="mb-6 rounded-xl border border-primary/30 bg-card p-6">
           <h3 className="mb-4 font-medium text-base md:text-lg">Novo Aviso</h3>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-6 lg:grid-cols-[1.3fr_1fr]">
             <div>
-              <Label className="mb-1 block text-xs md:text-sm">Título do Post</Label>
-              <Input
-                value={newAnnouncement.title}
-                onChange={(e) => setNewAnnouncement({ ...newAnnouncement, title: e.target.value })}
-                placeholder="Ex: Nova atualização no ranking de afiliados"
-                className="text-sm"
-              />
-            </div>
-            <div>
-              <Label className="mb-1 block text-xs md:text-sm">Mensagem curta (banner)</Label>
-              <Input
-                value={newAnnouncement.message}
-                onChange={(e) => setNewAnnouncement({ ...newAnnouncement, message: e.target.value })}
-                placeholder="Ex: 5 CRIATIVOS ADICIONADOS NO PRODUTO TAL"
-                className="text-sm"
-              />
-            </div>
-            <div>
-              <Label className="mb-1 block text-xs md:text-sm">Resumo</Label>
-              <Input
-                value={newAnnouncement.excerpt}
-                onChange={(e) => setNewAnnouncement({ ...newAnnouncement, excerpt: e.target.value })}
-                placeholder="Uma chamada curta para a listagem do blog."
-                className="text-sm"
-              />
-            </div>
-            <div>
-              <Label className="mb-1 block text-xs md:text-sm">Slug (opcional)</Label>
-              <Input
-                value={newAnnouncement.slug}
-                onChange={(e) => setNewAnnouncement({ ...newAnnouncement, slug: e.target.value })}
-                placeholder="ex: manifesto-afilia360"
-                className="text-sm"
-              />
-            </div>
-            <div>
-              <Label className="mb-1 block text-xs md:text-sm">Imagem de capa URL</Label>
-              <Input
-                value={newAnnouncement.coverUrl}
-                onChange={(e) => setNewAnnouncement({ ...newAnnouncement, coverUrl: e.target.value })}
-                placeholder="https://..."
-                className="text-sm"
-              />
-            </div>
-            <div>
-              <Label className="mb-1 block text-xs md:text-sm">Link externo (opcional)</Label>
-              <Input
-                value={newAnnouncement.linkUrl}
-                onChange={(e) => setNewAnnouncement({ ...newAnnouncement, linkUrl: e.target.value })}
-                placeholder="https://..."
-                className="text-sm"
-              />
-            </div>
-            <div>
-              <Label className="mb-2 block text-xs md:text-sm">Tipo</Label>
-              <div className="flex gap-2 flex-wrap">
-                {(["info", "promo", "update", "alert"] as const).map((type) => (
-                  <Button
-                    key={type}
-                    size="sm"
-                    variant={newAnnouncement.type === type ? "default" : "outline"}
-                    onClick={() => setNewAnnouncement({ ...newAnnouncement, type })}
-                    className={
-                      newAnnouncement.type === type
-                        ? type === "info"
-                          ? "bg-blue-600"
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <Label className="mb-1 block text-xs md:text-sm">Título do Post *</Label>
+                  <Input
+                    value={newAnnouncement.title}
+                    onChange={(e) => setNewAnnouncement({ ...newAnnouncement, title: e.target.value })}
+                    placeholder="Ex: Nova atualização no ranking de afiliados"
+                    className="text-sm"
+                  />
+                </div>
+                <div>
+                  <Label className="mb-1 block text-xs md:text-sm">Mensagem curta (banner)</Label>
+                  <Input
+                    value={newAnnouncement.message}
+                    onChange={(e) => setNewAnnouncement({ ...newAnnouncement, message: e.target.value })}
+                    placeholder="Ex: 5 CRIATIVOS ADICIONADOS NO PRODUTO TAL"
+                    className="text-sm"
+                  />
+                </div>
+                <div>
+                  <Label className="mb-1 block text-xs md:text-sm">Resumo *</Label>
+                  <Input
+                    value={newAnnouncement.excerpt}
+                    onChange={(e) => setNewAnnouncement({ ...newAnnouncement, excerpt: e.target.value })}
+                    placeholder="Uma chamada curta para a listagem do blog."
+                    className="text-sm"
+                  />
+                </div>
+                <div>
+                  <Label className="mb-1 block text-xs md:text-sm">Slug</Label>
+                  <Input
+                    value={newAnnouncement.slug}
+                    onChange={(e) => {
+                      setSlugManuallyEdited(true)
+                      setNewAnnouncement({ ...newAnnouncement, slug: slugifyAnnouncement(e.target.value) })
+                    }}
+                    placeholder="ex: manifesto-afilia360"
+                    className="text-sm"
+                  />
+                </div>
+                <div>
+                  <Label className="mb-1 block text-xs md:text-sm">Status de publicação</Label>
+                  <div className="flex gap-2">
+                    {(["draft", "published"] as const).map((status) => (
+                      <Button
+                        key={status}
+                        size="sm"
+                        variant={newAnnouncement.publicationStatus === status ? "default" : "outline"}
+                        onClick={() => setNewAnnouncement({ ...newAnnouncement, publicationStatus: status })}
+                      >
+                        {status === "draft" ? "Rascunho" : "Publicado"}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <Label className="mb-1 block text-xs md:text-sm">Data de publicação</Label>
+                  <Input
+                    type="datetime-local"
+                    value={newAnnouncement.publishedAt}
+                    onChange={(e) => setNewAnnouncement({ ...newAnnouncement, publishedAt: e.target.value })}
+                    className="text-sm"
+                  />
+                </div>
+                <div>
+                  <Label className="mb-1 block text-xs md:text-sm">Imagem de capa URL</Label>
+                  <Input
+                    value={newAnnouncement.coverUrl}
+                    onChange={(e) => setNewAnnouncement({ ...newAnnouncement, coverUrl: e.target.value })}
+                    placeholder="https://..."
+                    className="text-sm"
+                  />
+                </div>
+                <div>
+                  <Label className="mb-1 block text-xs md:text-sm">Link externo (opcional)</Label>
+                  <Input
+                    value={newAnnouncement.linkUrl}
+                    onChange={(e) => setNewAnnouncement({ ...newAnnouncement, linkUrl: e.target.value })}
+                    placeholder="https://..."
+                    className="text-sm"
+                  />
+                </div>
+                <div>
+                  <Label className="mb-2 block text-xs md:text-sm">Tipo</Label>
+                  <div className="flex gap-2 flex-wrap">
+                    {(["info", "promo", "update", "alert"] as const).map((type) => (
+                      <Button
+                        key={type}
+                        size="sm"
+                        variant={newAnnouncement.type === type ? "default" : "outline"}
+                        onClick={() => setNewAnnouncement({ ...newAnnouncement, type })}
+                        className={
+                          newAnnouncement.type === type
+                            ? type === "info"
+                              ? "bg-blue-600"
+                              : type === "promo"
+                                ? "bg-green-600"
+                                : type === "update"
+                                  ? "bg-amber-600"
+                                  : "bg-red-600"
+                            : ""
+                        }
+                      >
+                        {type === "info"
+                          ? "Informação"
                           : type === "promo"
-                            ? "bg-green-600"
+                            ? "Promoção"
                             : type === "update"
-                              ? "bg-amber-600"
-                              : "bg-red-600"
-                        : ""
-                    }
-                  >
-                    {type === "info"
-                      ? "Informação"
-                      : type === "promo"
-                        ? "Promoção"
-                        : type === "update"
-                          ? "Atualização"
-                          : "Alerta"}
-                  </Button>
-                ))}
+                              ? "Atualização"
+                              : "Alerta"}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="mt-4">
+                <Label className="mb-1 block text-xs md:text-sm">Conteúdo completo do artigo *</Label>
+                <textarea
+                  value={newAnnouncement.content}
+                  onChange={(e) => setNewAnnouncement({ ...newAnnouncement, content: e.target.value })}
+                  placeholder="Escreva aqui o conteúdo do artigo..."
+                  className="min-h-[180px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                />
+              </div>
+              {formError && <p className="mt-3 text-sm text-destructive">{formError}</p>}
+              <div className="mt-4 flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setIsAdding(false)}>
+                  Cancelar
+                </Button>
+                <Button onClick={handleAdd} disabled={saving}>
+                  {saving ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Save className="mr-1 h-4 w-4" />}
+                  Salvar
+                </Button>
               </div>
             </div>
-          </div>
-          <div className="mt-4">
-            <Label className="mb-1 block text-xs md:text-sm">Conteúdo completo do artigo</Label>
-            <textarea
-              value={newAnnouncement.content}
-              onChange={(e) => setNewAnnouncement({ ...newAnnouncement, content: e.target.value })}
-              placeholder="Escreva aqui o conteúdo do artigo..."
-              className="min-h-[180px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-            />
-          </div>
-          <div className="mt-4 flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setIsAdding(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleAdd}>
-              <Save className="mr-1 h-4 w-4" />
-              Salvar
-            </Button>
+
+            <div className="space-y-4 rounded-lg border border-border/60 bg-background/30 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Preview em tempo real</p>
+              <div className="rounded-lg border border-border bg-card p-3">
+                <p className="text-xs text-muted-foreground">Card/lista</p>
+                <p className="mt-1 font-medium">{newAnnouncement.title || "Título do aviso"}</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {newAnnouncement.excerpt || "Resumo exibido na listagem do blog."}
+                </p>
+                <p className="mt-2 text-[11px] text-muted-foreground">
+                  {newAnnouncement.publicationStatus === "draft" ? "Rascunho" : "Publicado"} •{" "}
+                  {newAnnouncement.publishedAt ? new Date(newAnnouncement.publishedAt).toLocaleDateString("pt-BR") : "Sem data"}
+                </p>
+              </div>
+              <div className="rounded-lg border border-border bg-card p-3">
+                <p className="text-xs text-muted-foreground">Detalhe</p>
+                <p className="mt-1 text-lg font-semibold">{newAnnouncement.title || "Título do aviso"}</p>
+                <p className="mt-2 whitespace-pre-line text-sm text-muted-foreground">
+                  {newAnnouncement.content || "Conteúdo completo aparecerá aqui em tempo real."}
+                </p>
+                <p className="mt-3 text-[11px] text-muted-foreground">URL final: /avisos/{newAnnouncement.slug || "slug-do-post"}</p>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -2523,11 +2670,14 @@ function AnnouncementsAdmin() {
                     <p className={`font-medium ${announcement.active ? "" : "text-muted-foreground line-through"}`}>
                       {announcement.title || "Sem título"}
                     </p>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {announcement.excerpt || announcement.text}
-                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground">{announcement.excerpt || announcement.text}</p>
                     <p className="mt-2 text-xs text-muted-foreground">
-                      {announcement.created_at ? new Date(announcement.created_at).toLocaleDateString("pt-BR") : ""}
+                      {announcement.published_at || announcement.created_at
+                        ? new Date(announcement.published_at || announcement.created_at).toLocaleDateString("pt-BR")
+                        : ""}
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Status: {announcement.publication_status === "published" ? "Publicado" : "Rascunho"}
                     </p>
                   </div>
                   <Badge
