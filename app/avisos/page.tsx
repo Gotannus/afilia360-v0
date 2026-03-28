@@ -16,7 +16,7 @@ export default async function AvisosPage() {
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6">
-      <header className="brand-surface mb-8 overflow-hidden rounded-2xl p-6">
+      <header className="premium-hero mb-8 overflow-hidden p-6 sm:p-8">
         <div className="brand-highlight mb-4 h-1 w-24 rounded-full" />
         <Link href="/" className="mb-4 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-3.5 w-3.5" />
@@ -25,7 +25,7 @@ export default async function AvisosPage() {
         <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary/15 ring-1 ring-primary/30">
           <Megaphone className="h-5 w-5 text-primary" />
         </div>
-        <h1 className="text-3xl font-bold tracking-tight">Blog de Avisos do Afilia360</h1>
+        <h1 className="premium-title-hero">Blog de Avisos do Afilia360</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Todas as novidades da plataforma em um único lugar: atualizações, promoções, comunicados e alertas.
         </p>
@@ -38,7 +38,10 @@ export default async function AvisosPage() {
       ) : (
         <div className="space-y-4">
           {posts.map((post) => (
-            <article key={post.id} className="brand-surface rounded-xl p-5 transition-transform duration-200 hover:-translate-y-0.5">
+            <article
+              key={post.id}
+              className="premium-surface p-5 transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-lux-lg)]"
+            >
               <div className="mb-3 flex flex-wrap items-center gap-2">
                 <Badge variant="outline">{typeLabel[post.category] || "Aviso"}</Badge>
                 <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
@@ -47,7 +50,7 @@ export default async function AvisosPage() {
                 </span>
               </div>
 
-              <h2 className="text-xl font-semibold">{post.title}</h2>
+              <h2 className="premium-title-card">{post.title}</h2>
               <p className="mt-2 text-sm text-muted-foreground">{post.excerpt}</p>
 
               <div className="mt-4 flex flex-wrap gap-2">
