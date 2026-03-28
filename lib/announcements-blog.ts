@@ -97,11 +97,14 @@ function mapNoticePost(row: any): NoticePost {
 
 export async function fetchNoticePosts(limit = 50): Promise<NoticePost[]> {
   const supabase = await createClient()
+  const now = new Date().toISOString()
   const { data, error } = await supabase
     .from("announcements")
     .select("*")
     .eq("active", true)
-    .order("created_at", { ascending: false })
+    .eq("publication_status", "published")
+    .lte("published_at", now)
+    .order("published_at", { ascending: false })
     .limit(limit)
 
   if (error || !data) {
