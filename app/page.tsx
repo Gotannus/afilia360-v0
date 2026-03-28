@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Header } from "@/components/header"
 import { Sidebar } from "@/components/sidebar"
 import { ProductsGrid } from "@/components/products-grid"
-import { AnnouncementsTicker } from "@/components/announcements-ticker"
+import { AnnouncementsBanner } from "@/components/announcements-banner"
 import { RankingBanner } from "@/components/ranking/ranking-banner"
 
 export type SortOption = "relevancia" | "mais-vendidos" | "mais-recentes" | "maior-comissao" | "melhor-avaliados"
@@ -17,7 +17,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
       <Header searchQuery={searchQuery} onSearchChange={setSearchQuery} />
-      <AnnouncementsTicker />
+      <AnnouncementsBanner />
       <RankingBanner />
 
       <div className="mx-auto max-w-7xl px-6 py-8">
