@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { CalendarDays, Megaphone, ArrowRight } from "lucide-react"
+import { CalendarDays, Megaphone, ArrowRight, ArrowLeft } from "lucide-react"
 import { fetchNoticePosts } from "@/lib/announcements-blog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -16,7 +16,12 @@ export default async function AvisosPage() {
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6">
-      <header className="mb-8 rounded-2xl border border-border bg-card/60 p-6">
+      <header className="brand-surface mb-8 overflow-hidden rounded-2xl p-6">
+        <div className="brand-highlight mb-4 h-1 w-24 rounded-full" />
+        <Link href="/" className="mb-4 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Voltar para plataforma
+        </Link>
         <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary/15 ring-1 ring-primary/30">
           <Megaphone className="h-5 w-5 text-primary" />
         </div>
@@ -33,7 +38,7 @@ export default async function AvisosPage() {
       ) : (
         <div className="space-y-4">
           {posts.map((post) => (
-            <article key={post.id} className="rounded-xl border border-border bg-card/50 p-5">
+            <article key={post.id} className="brand-surface rounded-xl p-5 transition-transform duration-200 hover:-translate-y-0.5">
               <div className="mb-3 flex flex-wrap items-center gap-2">
                 <Badge variant="outline">{typeLabel[post.category] || "Aviso"}</Badge>
                 <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">

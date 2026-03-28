@@ -30,7 +30,8 @@ export default async function AvisoDetalhePage({ params }: { params: Promise<{ s
         </Button>
       </Link>
 
-      <article className="rounded-2xl border border-border bg-card/50 p-6 sm:p-8">
+      <article className="brand-surface rounded-2xl p-6 sm:p-8">
+        <div className="brand-highlight mb-4 h-1 w-24 rounded-full" />
         <div className="mb-4 flex flex-wrap items-center gap-2">
           <Badge variant="outline">{typeLabel[post.category] || "Aviso"}</Badge>
           <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">

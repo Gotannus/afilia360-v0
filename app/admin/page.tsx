@@ -2292,7 +2292,13 @@ function AnnouncementsAdmin() {
   const [isAdding, setIsAdding] = useState(false)
   const [loading, setLoading] = useState(true)
   const [newAnnouncement, setNewAnnouncement] = useState({
+    title: "",
     message: "",
+    excerpt: "",
+    content: "",
+    coverUrl: "",
+    linkUrl: "",
+    slug: "",
     type: "info" as "info" | "promo" | "update" | "alert",
     active: true,
   })
@@ -2317,16 +2323,34 @@ function AnnouncementsAdmin() {
   }
 
   const handleAdd = async () => {
-    if (!newAnnouncement.message) return
+    if (!newAnnouncement.title && !newAnnouncement.message && !newAnnouncement.content) return
+
+    const textFallback = newAnnouncement.message || newAnnouncement.excerpt || newAnnouncement.title
 
     const { error } = await supabase.from("announcements").insert({
-      text: newAnnouncement.message,
+      title: newAnnouncement.title || null,
+      text: textFallback,
+      excerpt: newAnnouncement.excerpt || null,
+      content: newAnnouncement.content || null,
+      cover_url: newAnnouncement.coverUrl || null,
+      link_url: newAnnouncement.linkUrl || null,
+      slug: newAnnouncement.slug || null,
       type: newAnnouncement.type,
       active: newAnnouncement.active,
     })
 
     if (!error) {
-      setNewAnnouncement({ message: "", type: "info", active: true })
+      setNewAnnouncement({
+        title: "",
+        message: "",
+        excerpt: "",
+        content: "",
+        coverUrl: "",
+        linkUrl: "",
+        slug: "",
+        type: "info",
+        active: true,
+      })
       setIsAdding(false)
       fetchAnnouncements()
     }
@@ -2371,11 +2395,56 @@ function AnnouncementsAdmin() {
           <h3 className="mb-4 font-medium text-base md:text-lg">Novo Aviso</h3>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <Label className="mb-1 block text-xs md:text-sm">Mensagem</Label>
+              <Label className="mb-1 block text-xs md:text-sm">Título do Post</Label>
+              <Input
+                value={newAnnouncement.title}
+                onChange={(e) => setNewAnnouncement({ ...newAnnouncement, title: e.target.value })}
+                placeholder="Ex: Nova atualização no ranking de afiliados"
+                className="text-sm"
+              />
+            </div>
+            <div>
+              <Label className="mb-1 block text-xs md:text-sm">Mensagem curta (banner)</Label>
               <Input
                 value={newAnnouncement.message}
                 onChange={(e) => setNewAnnouncement({ ...newAnnouncement, message: e.target.value })}
                 placeholder="Ex: 5 CRIATIVOS ADICIONADOS NO PRODUTO TAL"
+                className="text-sm"
+              />
+            </div>
+            <div>
+              <Label className="mb-1 block text-xs md:text-sm">Resumo</Label>
+              <Input
+                value={newAnnouncement.excerpt}
+                onChange={(e) => setNewAnnouncement({ ...newAnnouncement, excerpt: e.target.value })}
+                placeholder="Uma chamada curta para a listagem do blog."
+                className="text-sm"
+              />
+            </div>
+            <div>
+              <Label className="mb-1 block text-xs md:text-sm">Slug (opcional)</Label>
+              <Input
+                value={newAnnouncement.slug}
+                onChange={(e) => setNewAnnouncement({ ...newAnnouncement, slug: e.target.value })}
+                placeholder="ex: manifesto-afilia360"
+                className="text-sm"
+              />
+            </div>
+            <div>
+              <Label className="mb-1 block text-xs md:text-sm">Imagem de capa URL</Label>
+              <Input
+                value={newAnnouncement.coverUrl}
+                onChange={(e) => setNewAnnouncement({ ...newAnnouncement, coverUrl: e.target.value })}
+                placeholder="https://..."
+                className="text-sm"
+              />
+            </div>
+            <div>
+              <Label className="mb-1 block text-xs md:text-sm">Link externo (opcional)</Label>
+              <Input
+                value={newAnnouncement.linkUrl}
+                onChange={(e) => setNewAnnouncement({ ...newAnnouncement, linkUrl: e.target.value })}
+                placeholder="https://..."
                 className="text-sm"
               />
             </div>
@@ -2412,6 +2481,15 @@ function AnnouncementsAdmin() {
               </div>
             </div>
           </div>
+          <div className="mt-4">
+            <Label className="mb-1 block text-xs md:text-sm">Conteúdo completo do artigo</Label>
+            <textarea
+              value={newAnnouncement.content}
+              onChange={(e) => setNewAnnouncement({ ...newAnnouncement, content: e.target.value })}
+              placeholder="Escreva aqui o conteúdo do artigo..."
+              className="min-h-[180px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+            />
+          </div>
           <div className="mt-4 flex justify-end gap-2">
             <Button variant="outline" onClick={() => setIsAdding(false)}>
               Cancelar
@@ -2432,8 +2510,26 @@ function AnnouncementsAdmin() {
         ) : (
           announcements.map((announcement) => (
             <div key={announcement.id} className="rounded-xl border border-border bg-card p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-3">
+                  {announcement.cover_url && (
+                    <img
+                      src={announcement.cover_url || "/placeholder.jpg"}
+                      alt={announcement.title || announcement.text || "Aviso"}
+                      className="h-16 w-24 rounded-md border border-border object-cover"
+                    />
+                  )}
+                  <div>
+                    <p className={`font-medium ${announcement.active ? "" : "text-muted-foreground line-through"}`}>
+                      {announcement.title || "Sem título"}
+                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {announcement.excerpt || announcement.text}
+                    </p>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      {announcement.created_at ? new Date(announcement.created_at).toLocaleDateString("pt-BR") : ""}
+                    </p>
+                  </div>
                   <Badge
                     variant="outline"
                     className={
@@ -2454,7 +2550,6 @@ function AnnouncementsAdmin() {
                           ? "Update"
                           : "Alerta"}
                   </Badge>
-                  <p className={announcement.active ? "" : "text-muted-foreground line-through"}>{announcement.text}</p>
                 </div>
                 <div className="flex gap-2">
                   <Button

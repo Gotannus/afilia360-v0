@@ -59,7 +59,7 @@ export function Header({ searchQuery, onSearchChange }: HeaderProps) {
   const isAdminUser = session?.email === getAdminEmail()
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl">
+    <header className="brand-surface sticky top-0 z-50 border-b border-border/70">
       <div className="flex h-16 items-center justify-between px-4 md:px-6">
         <div className="flex items-center gap-4 md:gap-8">
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
@@ -72,7 +72,7 @@ export function Header({ searchQuery, onSearchChange }: HeaderProps) {
               <div className="flex flex-col h-full">
                 <div className="p-6 border-b border-border">
                   <Link href="/" className="flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+                    <div className="brand-highlight flex h-8 w-8 items-center justify-center rounded-lg">
                       <span className="text-sm font-bold text-primary-foreground">A</span>
                     </div>
                     <span className="text-lg font-semibold tracking-tight">AFILIA360</span>
@@ -111,7 +111,7 @@ export function Header({ searchQuery, onSearchChange }: HeaderProps) {
           </Sheet>
 
           <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+            <div className="brand-highlight flex h-8 w-8 items-center justify-center rounded-lg">
               <span className="text-sm font-bold text-primary-foreground">A</span>
             </div>
             <span className="text-lg font-semibold tracking-tight">AFILIA360</span>
