@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Link from "next/link"
 import { Megaphone, Gift, Sparkles, AlertTriangle, X, Bell } from "lucide-react"
 import { createBrowserClient } from "@supabase/ssr"
 import { Badge } from "@/components/ui/badge"
@@ -101,14 +102,22 @@ export function AnnouncementsBanner() {
               {announcements.length}
             </span>
           </div>
-          <button
-            onClick={handleDismiss}
-            className="flex items-center gap-1 rounded px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
-            aria-label="Dispensar"
-          >
-            <X className="h-3 w-3" />
-            Fechar
-          </button>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/avisos"
+              className="rounded px-2 py-0.5 text-xs text-primary transition-colors hover:text-primary/80"
+            >
+              Ver blog de avisos
+            </Link>
+            <button
+              onClick={handleDismiss}
+              className="flex items-center gap-1 rounded px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+              aria-label="Dispensar"
+            >
+              <X className="h-3 w-3" />
+              Fechar
+            </button>
+          </div>
         </div>
 
         {/* Grid de avisos */}
