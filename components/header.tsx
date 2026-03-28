@@ -14,6 +14,7 @@ import {
   Menu,
   Package,
   Trophy,
+  Newspaper,
   HelpCircle,
   Megaphone,
   Gift,
@@ -58,7 +59,7 @@ export function Header({ searchQuery, onSearchChange }: HeaderProps) {
   const isAdminUser = session?.email === getAdminEmail()
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl">
+    <header className="brand-surface sticky top-0 z-50 border-b border-border/70">
       <div className="flex h-16 items-center justify-between px-4 md:px-6">
         <div className="flex items-center gap-4 md:gap-8">
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
@@ -71,7 +72,7 @@ export function Header({ searchQuery, onSearchChange }: HeaderProps) {
               <div className="flex flex-col h-full">
                 <div className="p-6 border-b border-border">
                   <Link href="/" className="flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+                    <div className="brand-highlight flex h-8 w-8 items-center justify-center rounded-lg">
                       <span className="text-sm font-bold text-primary-foreground">A</span>
                     </div>
                     <span className="text-lg font-semibold tracking-tight">AFILIA360</span>
@@ -90,6 +91,10 @@ export function Header({ searchQuery, onSearchChange }: HeaderProps) {
                     <Trophy className="h-4 w-4" />
                     Ranking
                   </Link>
+                  <Link href="/avisos" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                    <Newspaper className="h-4 w-4" />
+                    Avisos
+                  </Link>
                   <a href="#" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors">
                     <HelpCircle className="h-4 w-4" />
                     Suporte
@@ -106,7 +111,7 @@ export function Header({ searchQuery, onSearchChange }: HeaderProps) {
           </Sheet>
 
           <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+            <div className="brand-highlight flex h-8 w-8 items-center justify-center rounded-lg">
               <span className="text-sm font-bold text-primary-foreground">A</span>
             </div>
             <span className="text-lg font-semibold tracking-tight">AFILIA360</span>
@@ -119,6 +124,7 @@ export function Header({ searchQuery, onSearchChange }: HeaderProps) {
               Cursos
             </Link>
             <Link href="/ranking" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Ranking</Link>
+            <Link href="/avisos" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Avisos</Link>
             <a href="#" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Suporte</a>
             {isAdminUser && (
               <Link href="/admin" className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">

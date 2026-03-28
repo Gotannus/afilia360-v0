@@ -120,6 +120,11 @@
   }
   body {
     @apply bg-background text-foreground;
+    background-image:
+      radial-gradient(circle at 8% 0%, rgba(99, 102, 241, 0.14) 0%, transparent 34%),
+      radial-gradient(circle at 90% 12%, rgba(14, 165, 233, 0.1) 0%, transparent 30%),
+      radial-gradient(circle at 50% 100%, rgba(168, 85, 247, 0.12) 0%, transparent 30%);
+    background-attachment: fixed;
   }
 }
 
@@ -156,6 +161,16 @@
 }
 
 @layer utilities {
+  .brand-surface {
+    background: linear-gradient(140deg, rgba(24, 24, 27, 0.86), rgba(15, 23, 42, 0.82));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+  }
+
+  .brand-highlight {
+    background: linear-gradient(90deg, rgba(99, 102, 241, 0.28), rgba(14, 165, 233, 0.28), rgba(168, 85, 247, 0.24));
+  }
+
   /* Velocidade 1s no mobile (era 2.5s) */
   .animate-ticker {
     animation: ticker 1s linear infinite;

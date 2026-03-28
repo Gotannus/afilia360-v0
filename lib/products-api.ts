@@ -1,6 +1,14 @@
 import { createClient } from "@/lib/supabase/client"
 import type { Product } from "@/lib/products-data"
 
+const isDev = process.env.NODE_ENV !== "production"
+
+function debugLog(...args: unknown[]) {
+  if (isDev) {
+    console.log(...args)
+  }
+}
+
 // Converte do formato do banco para o formato do app
 function dbToProduct(row: any): Product {
   return {
@@ -76,7 +84,7 @@ const CACHE_DURATION = 5 * 60 * 1000 // 5 minutos
 export async function fetchProducts(): Promise<Product[]> {
   // Verificar cache
   if (productsCache && Date.now() - productsCache.timestamp < CACHE_DURATION) {
-    console.log("[v0] Usando produtos do cache")
+    debugLog("[v0] Usando produtos do cache")
     return productsCache.data
   }
 
@@ -123,7 +131,7 @@ export async function fetchProducts(): Promise<Product[]> {
     console.error("Erro ao buscar produtos:", error.message)
     // Retornar cache antigo se disponível
     if (productsCache) {
-      console.log("[v0] Usando cache antigo devido ao erro")
+      debugLog("[v0] Usando cache antigo devido ao erro")
       return productsCache.data
     }
     return []
@@ -137,16 +145,16 @@ export async function fetchProducts(): Promise<Product[]> {
     timestamp: Date.now()
   }
 
-  console.log("[v0] Produtos carregados do banco:", products.length)
+  debugLog("[v0] Produtos carregados do banco:", products.length)
 
   return products
 }
 
 export async function addProductToDb(product: Omit<Product, "id">): Promise<Product | null> {
-  console.log("[v0] Tentando adicionar produto:", product.title)
+  debugLog("[v0] Tentando adicionar produto:", product.title)
   const supabase = createClient()
   const productData = productToDb(product)
-  console.log("[v0] Dados do produto convertidos para DB:", productData)
+  debugLog("[v0] Dados do produto convertidos para DB:", productData)
   
   const { data, error } = await supabase.from("marketplace_products").insert(productData).select().single()
 
@@ -156,15 +164,15 @@ export async function addProductToDb(product: Omit<Product, "id">): Promise<Prod
     return null
   }
 
-  console.log("[v0] Produto adicionado com sucesso!")
+  debugLog("[v0] Produto adicionado com sucesso!")
   return dbToProduct(data)
 }
 
 export async function updateProductInDb(id: string, product: Partial<Product>): Promise<Product | null> {
-  console.log("[v0] Tentando atualizar produto:", id, product.title)
+  debugLog("[v0] Tentando atualizar produto:", id, product.title)
   const supabase = createClient()
   const productData = productToDb(product as Product)
-  console.log("[v0] Dados do produto convertidos para atualização:", productData)
+  debugLog("[v0] Dados do produto convertidos para atualização:", productData)
   
   const { data, error } = await supabase
     .from("marketplace_products")
@@ -179,12 +187,12 @@ export async function updateProductInDb(id: string, product: Partial<Product>): 
     return null
   }
 
-  console.log("[v0] Produto atualizado com sucesso!")
+  debugLog("[v0] Produto atualizado com sucesso!")
   return dbToProduct(data)
 }
 
 export async function deleteProductFromDb(id: string): Promise<boolean> {
-  console.log("[v0] Tentando deletar produto:", id)
+  debugLog("[v0] Tentando deletar produto:", id)
   const supabase = createClient()
   const { error } = await supabase.from("marketplace_products").delete().eq("id", id)
 
@@ -194,6 +202,6 @@ export async function deleteProductFromDb(id: string): Promise<boolean> {
     return false
   }
 
-  console.log("[v0] Produto deletado com sucesso!")
+  debugLog("[v0] Produto deletado com sucesso!")
   return true
 }
