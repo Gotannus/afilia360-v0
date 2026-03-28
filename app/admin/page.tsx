@@ -1184,12 +1184,16 @@ function ProductsAdmin() {
 }
 
 function UsersAdmin() {
+  const PAGE_SIZE = 20
   const [affiliates, setAffiliates] = useState<Affiliate[]>([])
   const [avatars, setAvatars] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [vipFilter, setVipFilter] = useState<string>("all")
   const [searchQuery, setSearchQuery] = useState<string>("") // Campo de busca
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>("")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalAffiliatesCount, setTotalAffiliatesCount] = useState(0)
   const [editingUser, setEditingUser] = useState<Affiliate | null>(null)
   const [editForm, setEditForm] = useState({ name: "", email: "", nome_celetus: "" })
   const [editDialogOpen, setEditDialogOpen] = useState(false)
@@ -1202,19 +1206,55 @@ function UsersAdmin() {
   const [resettingPassword, setResettingPassword] = useState(false)
 
   useEffect(() => {
-    fetchAffiliates()
-    fetchAvatars()
-  }, [])
+    const timeout = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery.trim())
+      setCurrentPage(1)
+    }, 300)
+
+    return () => clearTimeout(timeout)
+  }, [searchQuery])
 
   async function fetchAffiliates() {
+    setLoading(true)
     const supabase = createClient()
-    const { data, error } = await supabase.from("affiliates").select("*").order("created_at", { ascending: false })
+    const from = (currentPage - 1) * PAGE_SIZE
+    const to = from + PAGE_SIZE - 1
+
+    let query = supabase
+      .from("affiliates")
+      .select("*", { count: "exact" })
+      .order("created_at", { ascending: false })
+
+    if (statusFilter !== "all") {
+      query = query.eq("status", statusFilter)
+    }
+
+    if (vipFilter === "yes") {
+      query = query.eq("is_vip", true)
+    } else if (vipFilter === "no") {
+      query = query.eq("is_vip", false)
+    }
+
+    if (debouncedSearchQuery) {
+      query = query.or(`email.ilike.%${debouncedSearchQuery}%,name.ilike.%${debouncedSearchQuery}%`)
+    }
+
+    const { data, error, count } = await query.range(from, to)
 
     if (!error && data) {
       setAffiliates(data)
+      setTotalAffiliatesCount(count || 0)
     }
     setLoading(false)
   }
+
+  useEffect(() => {
+    fetchAffiliates()
+  }, [currentPage, statusFilter, vipFilter, debouncedSearchQuery])
+
+  useEffect(() => {
+    fetchAvatars()
+  }, [])
 
   async function fetchAvatars() {
     const supabase = createClient()
@@ -1353,18 +1393,9 @@ function UsersAdmin() {
     setResetPasswordDialogOpen(true)
   }
 
-  const filteredAffiliates = affiliates.filter((a) => {
-    const matchesStatus = statusFilter === "all" || a.status === statusFilter
-    const matchesVip = vipFilter === "all" || (vipFilter === "yes" && a.is_vip) || (vipFilter === "no" && !a.is_vip)
-    const matchesSearch =
-      searchQuery === "" ||
-      a.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      a.name?.toLowerCase().includes(searchQuery.toLowerCase())
-    return matchesStatus && matchesVip && matchesSearch
-  })
-
-  const totalUsers = affiliates.length
+  const totalUsers = totalAffiliatesCount
   const totalVip = affiliates.filter((a) => a.is_vip).length
+  const totalPages = Math.max(1, Math.ceil(totalAffiliatesCount / PAGE_SIZE))
 
   const exportToCSV = () => {
     console.log("[v0] Iniciando exportação CSV de usuários")
@@ -1385,7 +1416,7 @@ function UsersAdmin() {
     ]
     
     // Dados dos afiliados
-    const rows = filteredAffiliates.map((affiliate) => [
+    const rows = affiliates.map((affiliate) => [
       affiliate.name || "",
       affiliate.email || "",
       affiliate.whatsapp || "",
@@ -1441,14 +1472,14 @@ function UsersAdmin() {
             </span>
             <span className="flex items-center gap-1">
               <Crown className="h-4 w-4 text-yellow-500" />
-              <strong className="text-yellow-500">{totalVip}</strong> VIP
+              <strong className="text-yellow-500">{totalVip}</strong> VIP na página
             </span>
           </div>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <Button onClick={exportToCSV} variant="outline" className="gap-2 w-full sm:w-auto">
             <Download className="h-4 w-4" />
-            Exportar Lista ({filteredAffiliates.length})
+            Exportar Página ({affiliates.length})
           </Button>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -1462,7 +1493,10 @@ function UsersAdmin() {
           <select
             className="rounded-md border border-input bg-background px-3 py-2 text-sm"
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={(e) => {
+              setStatusFilter(e.target.value)
+              setCurrentPage(1)
+            }}
           >
             <option value="all">Todos os Status</option>
             <option value="approved">Aprovados</option>
@@ -1473,7 +1507,10 @@ function UsersAdmin() {
           <select
             className="rounded-md border border-input bg-background px-3 py-2 text-sm"
             value={vipFilter}
-            onChange={(e) => setVipFilter(e.target.value)}
+            onChange={(e) => {
+              setVipFilter(e.target.value)
+              setCurrentPage(1)
+            }}
           >
             <option value="all">Todos os VIPs</option>
             <option value="yes">VIPs</option>
@@ -1603,7 +1640,7 @@ function UsersAdmin() {
       </Dialog>
 
       <div className="space-y-4">
-        {filteredAffiliates.map((affiliate) => (
+        {affiliates.map((affiliate) => (
           <div key={affiliate.id} className="rounded-xl border border-border bg-card p-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-start gap-3">
@@ -1741,9 +1778,35 @@ function UsersAdmin() {
         ))}
       </div>
 
-      {filteredAffiliates.length === 0 && (
+      {affiliates.length === 0 && (
         <div className="text-center py-8 text-muted-foreground">
           Nenhum usuário encontrado com os filtros selecionados.
+        </div>
+      )}
+
+      {totalAffiliatesCount > PAGE_SIZE && (
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-muted-foreground">
+            Página {currentPage} de {totalPages} • {totalAffiliatesCount} usuários
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              disabled={currentPage === 1 || loading}
+            >
+              Anterior
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages || loading}
+            >
+              Próxima
+            </Button>
+          </div>
         </div>
       )}
     </div>
