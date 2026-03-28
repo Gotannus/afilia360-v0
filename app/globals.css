@@ -171,6 +171,13 @@
     background: linear-gradient(90deg, rgba(99, 102, 241, 0.28), rgba(14, 165, 233, 0.28), rgba(168, 85, 247, 0.24));
   }
 
+  .brand-hero {
+    min-height: clamp(18rem, 46vw, 25rem);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.12),
+      0 20px 70px rgba(0, 0, 0, 0.45);
+  }
+
   /* Velocidade 1s no mobile (era 2.5s) */
   .animate-ticker {
     animation: ticker 1s linear infinite;
