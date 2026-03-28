@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
 import Link from "next/link" // Import Link
 import { AdminGuard } from "@/components/admin-guard"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -61,11 +60,8 @@ import type React from "react" // Import React for JSXElement[]
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card" // Import Card components
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select" // Import Select components
 import { Dashboard } from "@/components/admin/dashboard" // Import Dashboard component
-import MonthlySalesManager from "@/components/admin/monthly-sales-manager" // Import MonthlySalesManager
 
 export default function AdminPage() {
-  const router = useRouter()
-
   return (
     <AdminGuard>
       <div className="min-h-screen bg-background p-4 md:p-6">
@@ -128,30 +124,6 @@ export default function AdminPage() {
             </TabsContent>
 
             <TabsContent value="ranking">
-              <RankingAdmin />
-            </TabsContent>
-
-            <TabsContent value="announcements">
-              <AnnouncementsAdmin />
-            </TabsContent>
-
-            <TabsContent value="dashboard">
-              <Dashboard />
-            </TabsContent>
-
-            <TabsContent value="products">
-              <ProductsAdmin />
-            </TabsContent>
-
-            <TabsContent value="courses">
-              <CoursesAdmin />
-            </TabsContent>
-
-            <TabsContent value="ranking">
-              {/* Adicionar MonthlySalesManager antes do RankingAdmin */}
-              <div className="mb-8">
-                <MonthlySalesManager />
-              </div>
               <RankingAdmin />
             </TabsContent>
 
