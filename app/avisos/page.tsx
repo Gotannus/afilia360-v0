@@ -1,15 +1,8 @@
 import Link from "next/link"
 import { CalendarDays, Megaphone, ArrowRight, ArrowLeft } from "lucide-react"
-import { fetchNoticePosts } from "@/lib/announcements-blog"
+import { fetchNoticePosts, getNoticeTheme } from "@/lib/announcements-blog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-
-const typeLabel: Record<string, string> = {
-  info: "Informação",
-  promo: "Promoção",
-  update: "Novidade",
-  alert: "Alerta",
-}
 
 export default async function AvisosPage() {
   const posts = await fetchNoticePosts()
@@ -37,36 +30,47 @@ export default async function AvisosPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {posts.map((post) => (
-            <article key={post.id} className="brand-surface rounded-xl p-5 transition-transform duration-200 hover:-translate-y-0.5">
-              <div className="mb-3 flex flex-wrap items-center gap-2">
-                <Badge variant="outline">{typeLabel[post.category] || "Aviso"}</Badge>
-                <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                  <CalendarDays className="h-3.5 w-3.5" />
-                  {new Date(post.publishedAt).toLocaleDateString("pt-BR")}
-                </span>
-              </div>
+          {posts.map((post) => {
+            const theme = getNoticeTheme(post.category)
+            const Icon = theme.icon
 
-              <h2 className="text-xl font-semibold">{post.title}</h2>
-              <p className="mt-2 text-sm text-muted-foreground">{post.excerpt}</p>
+            return (
+              <article
+                key={post.id}
+                className={`brand-surface rounded-xl p-5 transition-transform duration-200 hover:-translate-y-0.5 ${theme.cardClassName}`}
+              >
+                <div className="mb-3 flex flex-wrap items-center gap-2">
+                  <Badge variant="outline" className={theme.badgeClassName}>
+                    <Icon className="mr-1 h-3.5 w-3.5" />
+                    {theme.label}
+                  </Badge>
+                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                    <CalendarDays className="h-3.5 w-3.5" />
+                    {new Date(post.publishedAt).toLocaleDateString("pt-BR")}
+                  </span>
+                </div>
 
-              <div className="mt-4 flex flex-wrap gap-2">
-                <Link href={`/avisos/${post.slug}`}>
-                  <Button size="sm" className="gap-2">
-                    Ler artigo
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </Link>
-                {post.externalUrl && (
-                  <a href={post.externalUrl} target="_blank" rel="noreferrer">
-                    <Button size="sm" variant="outline">
-                      Link relacionado
+                <h2 className={`border-l-2 pl-3 text-xl font-semibold ${theme.detailClassName}`}>{post.title}</h2>
+                <p className="mt-2 text-sm text-muted-foreground">{post.excerpt}</p>
+
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <Link href={`/avisos/${post.slug}`}>
+                    <Button size="sm" className="gap-2">
+                      Ler artigo
+                      <ArrowRight className="h-4 w-4" />
                     </Button>
-                  </a>
-                )}
-              </div>
-            </article>
-          ))}
+                  </Link>
+                  {post.externalUrl && (
+                    <a href={post.externalUrl} target="_blank" rel="noreferrer">
+                      <Button size="sm" variant="outline">
+                        Link relacionado
+                      </Button>
+                    </a>
+                  )}
+                </div>
+              </article>
+            )
+          })}
         </div>
       )}
     </main>

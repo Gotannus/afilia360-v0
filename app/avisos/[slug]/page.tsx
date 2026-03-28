@@ -2,16 +2,9 @@ import Image from "next/image"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { CalendarDays, ChevronLeft, ExternalLink } from "lucide-react"
-import { fetchNoticePostBySlug } from "@/lib/announcements-blog"
+import { fetchNoticePostBySlug, getNoticeTheme } from "@/lib/announcements-blog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-
-const typeLabel: Record<string, string> = {
-  info: "Informação",
-  promo: "Promoção",
-  update: "Novidade",
-  alert: "Alerta",
-}
 
 export default async function AvisoDetalhePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
@@ -20,6 +13,9 @@ export default async function AvisoDetalhePage({ params }: { params: Promise<{ s
   if (!post) {
     notFound()
   }
+
+  const theme = getNoticeTheme(post.category)
+  const Icon = theme.icon
 
   return (
     <main className="mx-auto w-full max-w-4xl px-4 py-10 sm:px-6">
@@ -30,20 +26,23 @@ export default async function AvisoDetalhePage({ params }: { params: Promise<{ s
         </Button>
       </Link>
 
-      <article className="brand-surface rounded-2xl p-6 sm:p-8">
-        <div className="brand-highlight mb-4 h-1 w-24 rounded-full" />
+      <article className={`brand-surface rounded-2xl p-6 sm:p-8 ${theme.cardClassName}`}>
+        <div className={`mb-4 h-1 w-24 rounded-full border ${theme.detailClassName}`} />
         <div className="mb-4 flex flex-wrap items-center gap-2">
-          <Badge variant="outline">{typeLabel[post.category] || "Aviso"}</Badge>
+          <Badge variant="outline" className={theme.badgeClassName}>
+            <Icon className="mr-1 h-3.5 w-3.5" />
+            {theme.label}
+          </Badge>
           <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
             <CalendarDays className="h-3.5 w-3.5" />
             {new Date(post.publishedAt).toLocaleDateString("pt-BR")}
           </span>
         </div>
 
-        <h1 className="text-3xl font-bold tracking-tight">{post.title}</h1>
+        <h1 className={`border-l-2 pl-3 text-3xl font-bold tracking-tight ${theme.detailClassName}`}>{post.title}</h1>
 
         {post.coverImage && (
-          <div className="relative mt-6 h-64 w-full overflow-hidden rounded-xl border border-border sm:h-80">
+          <div className={`relative mt-6 h-64 w-full overflow-hidden rounded-xl border sm:h-80 ${theme.detailClassName}`}>
             <Image src={post.coverImage || "/placeholder.jpg"} alt={post.title} fill className="object-cover" />
           </div>
         )}
