@@ -1,4 +1,59 @@
+import type { LucideIcon } from "lucide-react"
+import { BellRing, CircleAlert, Info, Sparkles } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
+
+export type NoticeCategory = "info" | "promo" | "update" | "alert"
+
+export type NoticeTheme = {
+  label: string
+  badgeClassName: string
+  detailClassName: string
+  cardClassName: string
+  icon: LucideIcon
+}
+
+export const noticeThemeByCategory: Record<NoticeCategory, NoticeTheme> = {
+  info: {
+    label: "Informação",
+    badgeClassName: "border-sky-400/40 bg-sky-500/15 text-sky-200",
+    detailClassName: "border-sky-400/40",
+    cardClassName: "border border-sky-500/15 bg-gradient-to-br from-sky-500/10 via-transparent to-transparent",
+    icon: Info,
+  },
+  promo: {
+    label: "Promoção",
+    badgeClassName: "border-fuchsia-400/40 bg-fuchsia-500/15 text-fuchsia-200",
+    detailClassName: "border-fuchsia-400/40",
+    cardClassName: "border border-fuchsia-500/15 bg-gradient-to-br from-fuchsia-500/10 via-transparent to-transparent",
+    icon: Sparkles,
+  },
+  update: {
+    label: "Novidade",
+    badgeClassName: "border-emerald-400/40 bg-emerald-500/15 text-emerald-200",
+    detailClassName: "border-emerald-400/40",
+    cardClassName: "border border-emerald-500/15 bg-gradient-to-br from-emerald-500/10 via-transparent to-transparent",
+    icon: BellRing,
+  },
+  alert: {
+    label: "Alerta",
+    badgeClassName: "border-amber-400/40 bg-amber-500/15 text-amber-200",
+    detailClassName: "border-amber-400/40",
+    cardClassName: "border border-amber-500/15 bg-gradient-to-br from-amber-500/10 via-transparent to-transparent",
+    icon: CircleAlert,
+  },
+}
+
+export const defaultNoticeTheme: NoticeTheme = {
+  label: "Aviso",
+  badgeClassName: "border-border bg-muted/40 text-foreground",
+  detailClassName: "border-border",
+  cardClassName: "border border-border bg-gradient-to-br from-muted/30 via-transparent to-transparent",
+  icon: Info,
+}
+
+export function getNoticeTheme(category?: string): NoticeTheme {
+  return noticeThemeByCategory[category as NoticeCategory] || defaultNoticeTheme
+}
 
 export type NoticePost = {
   id: string
@@ -6,7 +61,7 @@ export type NoticePost = {
   title: string
   excerpt: string
   content: string
-  category: "info" | "promo" | "update" | "alert"
+  category: NoticeCategory
   publishedAt: string
   coverImage: string | null
   externalUrl: string | null
@@ -42,11 +97,14 @@ function mapNoticePost(row: any): NoticePost {
 
 export async function fetchNoticePosts(limit = 50): Promise<NoticePost[]> {
   const supabase = await createClient()
+  const now = new Date().toISOString()
   const { data, error } = await supabase
     .from("announcements")
     .select("*")
     .eq("active", true)
-    .order("created_at", { ascending: false })
+    .eq("publication_status", "published")
+    .lte("published_at", now)
+    .order("published_at", { ascending: false })
     .limit(limit)
 
   if (error || !data) {
