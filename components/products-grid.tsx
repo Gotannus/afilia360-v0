@@ -32,10 +32,6 @@ export function ProductsGrid({ selectedCategory, searchQuery, sortBy, onSortChan
     async function loadProducts() {
       setLoading(true)
       const data = await fetchProducts()
-      console.log(
-        "[v0] Produtos após fetchProducts:",
-        data.map((p) => p.title),
-      )
       setProducts(data)
       setLoading(false)
     }
@@ -86,14 +82,6 @@ export function ProductsGrid({ selectedCategory, searchQuery, sortBy, onSortChan
         }
       })
     }
-
-    console.log(
-      "[v0] Produtos após ordenação (sortBy:",
-      sortBy,
-      "):",
-      result.map((p) => p.title),
-    )
-
     return result
   }, [products, selectedCategory, searchQuery, sortBy])
 
