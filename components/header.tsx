@@ -15,6 +15,10 @@ import {
   Package,
   Trophy,
   HelpCircle,
+  Megaphone,
+  Gift,
+  Sparkles,
+  AlertTriangle,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -26,7 +30,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Badge } from "@/components/ui/badge"
 import { getSession, logout, getAdminEmail, type AffiliateSession } from "@/lib/auth"
+import { useAnnouncements } from "@/components/announcements-banner"
+
+const typeConfig = {
+  info: { icon: Megaphone, label: "Informação", badgeClass: "border-blue-500/40 bg-blue-500/10 text-blue-400", barClass: "bg-blue-500" },
+  promo: { icon: Gift, label: "Promoção", badgeClass: "border-emerald-500/40 bg-emerald-500/10 text-emerald-400", barClass: "bg-emerald-500" },
+  update: { icon: Sparkles, label: "Novidade", badgeClass: "border-amber-500/40 bg-amber-500/10 text-amber-400", barClass: "bg-amber-500" },
+  alert: { icon: AlertTriangle, label: "Alerta", badgeClass: "border-red-500/40 bg-red-500/10 text-red-400", barClass: "bg-red-500" },
+}
 
 interface HeaderProps {
   searchQuery: string
@@ -36,6 +49,7 @@ interface HeaderProps {
 export function Header({ searchQuery, onSearchChange }: HeaderProps) {
   const [session, setSession] = useState<AffiliateSession | null>(null)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { count, announcements, hasNew } = useAnnouncements()
 
   useEffect(() => {
     setSession(getSession())
@@ -63,45 +77,25 @@ export function Header({ searchQuery, onSearchChange }: HeaderProps) {
                     <span className="text-lg font-semibold tracking-tight">AFILIA360</span>
                   </Link>
                 </div>
-
                 <nav className="flex flex-col gap-1 p-4">
-                  <Link
-                    href="/"
-                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground hover:bg-secondary transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
+                  <Link href="/" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground hover:bg-secondary transition-colors" onClick={() => setMobileMenuOpen(false)}>
                     <Package className="h-4 w-4" />
                     Marketplace
                   </Link>
-                  <Link
-                    href="/cursos"
-                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
+                  <Link href="/cursos" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors" onClick={() => setMobileMenuOpen(false)}>
                     <GraduationCap className="h-4 w-4" />
                     Cursos
                   </Link>
-                  <Link
-                    href="/ranking"
-                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
+                  <Link href="/ranking" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors" onClick={() => setMobileMenuOpen(false)}>
                     <Trophy className="h-4 w-4" />
                     Ranking
                   </Link>
-                  <a
-                    href="#"
-                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
-                  >
+                  <a href="#" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors">
                     <HelpCircle className="h-4 w-4" />
                     Suporte
                   </a>
                   {isAdminUser && (
-                    <Link
-                      href="/admin"
-                      className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
+                    <Link href="/admin" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors" onClick={() => setMobileMenuOpen(false)}>
                       <Settings className="h-4 w-4" />
                       Admin
                     </Link>
@@ -119,27 +113,15 @@ export function Header({ searchQuery, onSearchChange }: HeaderProps) {
           </Link>
 
           <nav className="hidden items-center gap-6 md:flex">
-            <Link href="/" className="text-sm font-medium text-foreground">
-              Marketplace
-            </Link>
-            <Link
-              href="/cursos"
-              className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
-            >
+            <Link href="/" className="text-sm font-medium text-foreground">Marketplace</Link>
+            <Link href="/cursos" className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
               <GraduationCap className="h-3.5 w-3.5" />
               Cursos
             </Link>
-            <Link href="/ranking" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-              Ranking
-            </Link>
-            <a href="#" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-              Suporte
-            </a>
+            <Link href="/ranking" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Ranking</Link>
+            <a href="#" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Suporte</a>
             {isAdminUser && (
-              <Link
-                href="/admin"
-                className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
-              >
+              <Link href="/admin" className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
                 <Settings className="h-3.5 w-3.5" />
                 Admin
               </Link>
@@ -159,9 +141,57 @@ export function Header({ searchQuery, onSearchChange }: HeaderProps) {
             />
           </div>
 
-          <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground">
-            <Bell className="h-4 w-4" />
-          </Button>
+          {/* Sino com avisos */}
+          {count > 0 ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative h-9 w-9 text-muted-foreground hover:text-foreground">
+                  <Bell className="h-4 w-4" />
+                  {hasNew && (
+                    <span className="absolute right-1.5 top-1.5 flex h-2 w-2">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
+                      <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+                    </span>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-80 p-0">
+                <div className="flex items-center justify-between border-b border-border px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <Bell className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-semibold">Novidades</span>
+                  </div>
+                  <Badge variant="outline" className="border-primary/30 bg-primary/10 text-primary text-[10px]">
+                    {count} {count === 1 ? "aviso" : "avisos"}
+                  </Badge>
+                </div>
+                <div className="max-h-72 overflow-y-auto py-1">
+                  {announcements.map((a) => {
+                    const cfg = typeConfig[a.type]
+                    const Icon = cfg.icon
+                    return (
+                      <div key={a.id} className="relative flex items-start gap-3 px-4 py-3 hover:bg-muted/50 transition-colors">
+                        <div className={`absolute inset-y-2 left-0 w-0.5 rounded-full ${cfg.barClass}`} />
+                        <div className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md border ${cfg.badgeClass}`}>
+                          <Icon className="h-3 w-3" />
+                        </div>
+                        <div>
+                          <p className={`mb-0.5 text-[10px] font-semibold uppercase tracking-wide ${cfg.badgeClass.split(" ").find((c) => c.startsWith("text-"))}`}>
+                            {cfg.label}
+                          </p>
+                          <p className="text-xs leading-relaxed text-foreground/90">{a.text}</p>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground">
+              <Bell className="h-4 w-4" />
+            </Button>
+          )}
 
           {session?.loggedIn ? (
             <DropdownMenu>
@@ -169,13 +199,7 @@ export function Header({ searchQuery, onSearchChange }: HeaderProps) {
                 <Button variant="outline" className="gap-2 bg-transparent">
                   <div className="flex h-6 w-6 items-center justify-center overflow-hidden rounded-full bg-primary text-xs font-semibold text-primary-foreground">
                     {session.photoUrl ? (
-                      <Image
-                        src={session.photoUrl || "/placeholder.svg"}
-                        alt={session.name}
-                        width={24}
-                        height={24}
-                        className="h-full w-full object-cover"
-                      />
+                      <Image src={session.photoUrl || "/placeholder.svg"} alt={session.name} width={24} height={24} className="h-full w-full object-cover" />
                     ) : (
                       session.name.charAt(0).toUpperCase()
                     )}
@@ -224,9 +248,7 @@ export function Header({ searchQuery, onSearchChange }: HeaderProps) {
           ) : (
             <div className="flex items-center gap-2">
               <Link href="/login">
-                <Button variant="ghost" className="hidden sm:flex">
-                  Entrar
-                </Button>
+                <Button variant="ghost" className="hidden sm:flex">Entrar</Button>
               </Link>
               <Link href="/cadastro">
                 <Button className="gap-2">
