@@ -17,6 +17,7 @@ import type { Product } from "@/lib/products-data"
 import type { Affiliate } from "@/lib/types"
 import { CoursesAdmin } from "@/components/admin/courses-admin"
 import { UserOrderbumps } from "@/components/admin/user-orderbumps"
+import { NovidadesAdmin } from "@/components/admin/novidades-admin"
 import {
   Plus,
   Edit2,
@@ -55,6 +56,7 @@ import {
   GripVertical,
   ArrowLeft,
   Download,
+  Newspaper,
 } from "lucide-react"
 import type React from "react" // Import React for JSXElement[]
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card" // Import Card components
@@ -103,6 +105,10 @@ export default function AdminPage() {
                     <Megaphone className="h-4 w-4 shrink-0" />
                     <span className="text-xs sm:text-sm">Avisos</span>
                   </TabsTrigger>
+                  <TabsTrigger value="novidades" className="flex items-center gap-2 whitespace-nowrap px-3 py-2">
+                    <Newspaper className="h-4 w-4 shrink-0" />
+                    <span className="text-xs sm:text-sm">Novidades</span>
+                  </TabsTrigger>
                   <TabsTrigger value="dashboard" className="flex items-center gap-2 whitespace-nowrap px-3 py-2">
                     <TrendingUp className="h-4 w-4 shrink-0" />
                     <span className="text-xs sm:text-sm">Dashboard</span>
@@ -129,6 +135,10 @@ export default function AdminPage() {
 
             <TabsContent value="announcements">
               <AnnouncementsAdmin />
+            </TabsContent>
+
+            <TabsContent value="novidades">
+              <NovidadesAdmin />
             </TabsContent>
 
             <TabsContent value="dashboard">
@@ -2288,9 +2298,30 @@ function RankingAdmin() {
 }
 
 function AnnouncementsAdmin() {
+  type PublicationStatus = "draft" | "published"
+
+  const formatDateTimeLocal = (value: Date) => {
+    const offset = value.getTimezoneOffset()
+    const localDate = new Date(value.getTime() - offset * 60 * 1000)
+    return localDate.toISOString().slice(0, 16)
+  }
+
+  const slugifyAnnouncement = (value: string) =>
+    value
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)+/g, "")
+
   const [announcements, setAnnouncements] = useState<any[]>([])
   const [isAdding, setIsAdding] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
+  const [formError, setFormError] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [savedPostSlug, setSavedPostSlug] = useState<string | null>(null)
+  const [savedPublicationStatus, setSavedPublicationStatus] = useState<PublicationStatus | null>(null)
   const [newAnnouncement, setNewAnnouncement] = useState({
     title: "",
     message: "",
@@ -2300,6 +2331,8 @@ function AnnouncementsAdmin() {
     linkUrl: "",
     slug: "",
     type: "info" as "info" | "promo" | "update" | "alert",
+    publicationStatus: "draft" as PublicationStatus,
+    publishedAt: formatDateTimeLocal(new Date()),
     active: true,
   })
 
@@ -2311,6 +2344,15 @@ function AnnouncementsAdmin() {
   useEffect(() => {
     fetchAnnouncements()
   }, [])
+
+  useEffect(() => {
+    if (slugManuallyEdited) return
+
+    setNewAnnouncement((prev) => ({
+      ...prev,
+      slug: slugifyAnnouncement(prev.title),
+    }))
+  }, [newAnnouncement.title, slugManuallyEdited])
 
   const fetchAnnouncements = async () => {
     setLoading(true)
@@ -2336,6 +2378,8 @@ function AnnouncementsAdmin() {
       link_url: newAnnouncement.linkUrl || null,
       slug: newAnnouncement.slug || null,
       type: newAnnouncement.type,
+      publication_status: newAnnouncement.publicationStatus,
+      published_at: publishedAt,
       active: newAnnouncement.active,
     })
 
@@ -2353,7 +2397,11 @@ function AnnouncementsAdmin() {
       })
       setIsAdding(false)
       fetchAnnouncements()
+    } else {
+      setFormError(error.message)
     }
+
+    setSaving(false)
   }
 
   const handleToggleActive = async (id: string, currentActive: boolean) => {
@@ -2384,16 +2432,36 @@ function AnnouncementsAdmin() {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-xl font-semibold">Gerenciar Avisos</h2>
-        <Button onClick={() => setIsAdding(!isAdding)} className="gap-2">
+        <Button
+          onClick={() => {
+            setIsAdding(!isAdding)
+            setFormError(null)
+          }}
+          className="gap-2"
+        >
           <Plus className="h-4 w-4" />
           Novo Aviso
         </Button>
       </div>
 
+      {savedPostSlug && savedPublicationStatus === "published" && (
+        <div className="mb-4 rounded-lg border border-emerald-500/40 bg-emerald-500/10 p-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-emerald-200">Post salvo com sucesso.</p>
+            <Link href={`/avisos/${savedPostSlug}`} target="_blank" rel="noreferrer">
+              <Button size="sm" variant="outline" className="gap-2 bg-transparent">
+                <Eye className="h-4 w-4" />
+                Visualizar no blog
+              </Button>
+            </Link>
+          </div>
+        </div>
+      )}
+
       {isAdding && (
         <div className="mb-6 rounded-xl border border-primary/30 bg-card p-6">
           <h3 className="mb-4 font-medium text-base md:text-lg">Novo Aviso</h3>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-6 lg:grid-cols-[1.3fr_1fr]">
             <div>
               <Label className="mb-1 block text-xs md:text-sm">Título do Post</Label>
               <Input
@@ -2464,40 +2532,59 @@ function AnnouncementsAdmin() {
                           : type === "promo"
                             ? "bg-green-600"
                             : type === "update"
-                              ? "bg-amber-600"
+                              ? "bg-yellow-600"
                               : "bg-red-600"
                         : ""
                     }
                   >
-                    {type === "info"
-                      ? "Informação"
-                      : type === "promo"
-                        ? "Promoção"
-                        : type === "update"
-                          ? "Atualização"
-                          : "Alerta"}
+                    {type === "info" ? "Info" : type === "promo" ? "Promoção" : type === "update" ? "Atualização" : "Alerta"}
                   </Button>
                 ))}
               </div>
             </div>
+            <div className="mt-4">
+              <Label className="mb-1 block text-xs md:text-sm">Conteúdo completo do artigo *</Label>
+              <textarea
+                value={newAnnouncement.content}
+                onChange={(e) => setNewAnnouncement({ ...newAnnouncement, content: e.target.value })}
+                placeholder="Escreva aqui o conteúdo do artigo..."
+                className="min-h-[180px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              />
+            </div>
+            {formError && <p className="mt-3 text-sm text-destructive">{formError}</p>}
+            <div className="mt-4 flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setIsAdding(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleAdd} disabled={saving}>
+                {saving ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Save className="mr-1 h-4 w-4" />}
+                Salvar
+              </Button>
+            </div>
           </div>
-          <div className="mt-4">
-            <Label className="mb-1 block text-xs md:text-sm">Conteúdo completo do artigo</Label>
-            <textarea
-              value={newAnnouncement.content}
-              onChange={(e) => setNewAnnouncement({ ...newAnnouncement, content: e.target.value })}
-              placeholder="Escreva aqui o conteúdo do artigo..."
-              className="min-h-[180px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-            />
-          </div>
-          <div className="mt-4 flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setIsAdding(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleAdd}>
-              <Save className="mr-1 h-4 w-4" />
-              Salvar
-            </Button>
+
+          <div className="space-y-4 rounded-lg border border-border/60 bg-background/30 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Preview em tempo real</p>
+              <div className="rounded-lg border border-border bg-card p-3">
+                <p className="text-xs text-muted-foreground">Card/lista</p>
+                <p className="mt-1 font-medium">{newAnnouncement.title || "Título do aviso"}</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {newAnnouncement.excerpt || "Resumo exibido na listagem do blog."}
+                </p>
+                <p className="mt-2 text-[11px] text-muted-foreground">
+                  {newAnnouncement.publicationStatus === "draft" ? "Rascunho" : "Publicado"} •{" "}
+                  {newAnnouncement.publishedAt ? new Date(newAnnouncement.publishedAt).toLocaleDateString("pt-BR") : "Sem data"}
+                </p>
+              </div>
+              <div className="rounded-lg border border-border bg-card p-3">
+                <p className="text-xs text-muted-foreground">Detalhe</p>
+                <p className="mt-1 text-lg font-semibold">{newAnnouncement.title || "Título do aviso"}</p>
+                <p className="mt-2 whitespace-pre-line text-sm text-muted-foreground">
+                  {newAnnouncement.content || "Conteúdo completo aparecerá aqui em tempo real."}
+                </p>
+                <p className="mt-3 text-[11px] text-muted-foreground">URL final: /avisos/{newAnnouncement.slug || "slug-do-post"}</p>
+              </div>
+            </div>
           </div>
         </div>
       )}

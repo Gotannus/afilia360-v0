@@ -3,6 +3,7 @@ import { CalendarDays, Megaphone, ArrowRight, ArrowLeft } from "lucide-react"
 import { fetchNoticePosts } from "@/lib/announcements-blog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { SiteHeaderShell } from "@/components/site-header-shell"
 
 const typeLabel: Record<string, string> = {
   info: "Informação",
@@ -53,25 +54,26 @@ export default async function AvisosPage() {
               <h2 className="premium-title-card">{post.title}</h2>
               <p className="mt-2 text-sm text-muted-foreground">{post.excerpt}</p>
 
-              <div className="mt-4 flex flex-wrap gap-2">
-                <Link href={`/avisos/${post.slug}`}>
-                  <Button size="sm" className="gap-2">
-                    Ler artigo
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </Link>
-                {post.externalUrl && (
-                  <a href={post.externalUrl} target="_blank" rel="noreferrer">
-                    <Button size="sm" variant="outline">
-                      Link relacionado
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <Link href={`/avisos/${post.slug}`}>
+                    <Button size="sm" className="gap-2">
+                      Ler artigo
+                      <ArrowRight className="h-4 w-4" />
                     </Button>
-                  </a>
-                )}
-              </div>
-            </article>
-          ))}
-        </div>
-      )}
-    </main>
+                  </Link>
+                  {post.externalUrl && (
+                    <a href={post.externalUrl} target="_blank" rel="noreferrer">
+                      <Button size="sm" variant="outline">
+                        Link relacionado
+                      </Button>
+                    </a>
+                  )}
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </main>
+    </>
   )
 }

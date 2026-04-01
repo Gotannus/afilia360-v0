@@ -5,6 +5,7 @@ import { CalendarDays, ChevronLeft, ExternalLink } from "lucide-react"
 import { fetchNoticePostBySlug } from "@/lib/announcements-blog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { SiteHeaderShell } from "@/components/site-header-shell"
 
 const typeLabel: Record<string, string> = {
   info: "Informação",
@@ -22,13 +23,15 @@ export default async function AvisoDetalhePage({ params }: { params: Promise<{ s
   }
 
   return (
-    <main className="mx-auto w-full max-w-4xl px-4 py-10 sm:px-6">
-      <Link href="/avisos">
-        <Button variant="ghost" className="mb-4 gap-1 px-2">
-          <ChevronLeft className="h-4 w-4" />
-          Voltar para avisos
-        </Button>
-      </Link>
+    <>
+      <SiteHeaderShell />
+      <main className="mx-auto w-full max-w-4xl px-4 py-10 sm:px-6">
+        <Link href="/avisos">
+          <Button variant="ghost" className="mb-4 gap-1 px-2">
+            <ChevronLeft className="h-4 w-4" />
+            Voltar para avisos
+          </Button>
+        </Link>
 
       <article className="premium-surface p-6 sm:p-8">
         <div className="brand-highlight mb-4 h-1 w-24 rounded-full" />
@@ -46,23 +49,31 @@ export default async function AvisoDetalhePage({ params }: { params: Promise<{ s
           <div className="relative mt-6 h-64 w-full overflow-hidden rounded-[var(--radius-premium)] border border-border sm:h-80">
             <Image src={post.coverImage || "/placeholder.jpg"} alt={post.title} fill className="object-cover" />
           </div>
-        )}
 
-        <div className="prose prose-invert mt-6 max-w-none whitespace-pre-line text-sm leading-7 text-foreground/95">
-          {post.content}
-        </div>
+          <h1 className="text-3xl font-bold tracking-tight">{post.title}</h1>
 
-        {post.externalUrl && (
-          <div className="mt-8">
-            <a href={post.externalUrl} target="_blank" rel="noreferrer">
-              <Button className="gap-2">
-                Acessar link relacionado
-                <ExternalLink className="h-4 w-4" />
-              </Button>
-            </a>
+          {post.coverImage && (
+            <div className="relative mt-6 h-64 w-full overflow-hidden rounded-xl border border-border sm:h-80">
+              <Image src={post.coverImage || "/placeholder.jpg"} alt={post.title} fill className="object-cover" />
+            </div>
+          )}
+
+          <div className="prose prose-invert mt-6 max-w-none whitespace-pre-line text-sm leading-7 text-foreground/95">
+            {post.content}
           </div>
-        )}
-      </article>
-    </main>
+
+          {post.externalUrl && (
+            <div className="mt-8">
+              <a href={post.externalUrl} target="_blank" rel="noreferrer">
+                <Button className="gap-2">
+                  Acessar link relacionado
+                  <ExternalLink className="h-4 w-4" />
+                </Button>
+              </a>
+            </div>
+          )}
+        </article>
+      </main>
+    </>
   )
 }
