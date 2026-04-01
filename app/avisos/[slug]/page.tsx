@@ -30,7 +30,7 @@ export default async function AvisoDetalhePage({ params }: { params: Promise<{ s
         </Button>
       </Link>
 
-      <article className="brand-surface rounded-2xl p-6 sm:p-8">
+      <article className="premium-surface p-6 sm:p-8">
         <div className="brand-highlight mb-4 h-1 w-24 rounded-full" />
         <div className="mb-4 flex flex-wrap items-center gap-2">
           <Badge variant="outline">{typeLabel[post.category] || "Aviso"}</Badge>
@@ -40,10 +40,10 @@ export default async function AvisoDetalhePage({ params }: { params: Promise<{ s
           </span>
         </div>
 
-        <h1 className="text-3xl font-bold tracking-tight">{post.title}</h1>
+        <h1 className="premium-title-hero">{post.title}</h1>
 
         {post.coverImage && (
-          <div className="relative mt-6 h-64 w-full overflow-hidden rounded-xl border border-border sm:h-80">
+          <div className="relative mt-6 h-64 w-full overflow-hidden rounded-[var(--radius-premium)] border border-border sm:h-80">
             <Image src={post.coverImage || "/placeholder.jpg"} alt={post.title} fill className="object-cover" />
           </div>
         )}
