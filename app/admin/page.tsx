@@ -2530,12 +2530,16 @@ function AnnouncementsAdmin() {
                         ? type === "info"
                           ? "bg-blue-600"
                           : type === "promo"
-                            ? "Promoção"
+                            ? "bg-green-600"
                             : type === "update"
-                              ? "Atualização"
-                              : "Alerta"}
-                      </Button>
-                    ))}
+                              ? "bg-yellow-600"
+                              : "bg-red-600"
+                        : ""
+                    }
+                  >
+                    {type === "info" ? "Info" : type === "promo" ? "Promoção" : type === "update" ? "Atualização" : "Alerta"}
+                  </Button>
+                ))}
                   </div>
                 </div>
               </div>
