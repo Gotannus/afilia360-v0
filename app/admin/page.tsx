@@ -2561,8 +2561,9 @@ function AnnouncementsAdmin() {
                 Salvar
               </Button>
             </div>
+          </div>
 
-            <div className="space-y-4 rounded-lg border border-border/60 bg-background/30 p-4">
+          <div className="space-y-4 rounded-lg border border-border/60 bg-background/30 p-4">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Preview em tempo real</p>
               <div className="rounded-lg border border-border bg-card p-3">
                 <p className="text-xs text-muted-foreground">Card/lista</p>
