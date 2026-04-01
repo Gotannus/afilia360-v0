@@ -20,6 +20,7 @@ import {
   Gift,
   Sparkles,
   AlertTriangle,
+  Newspaper,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -83,6 +84,10 @@ export function Header({ searchQuery, onSearchChange }: HeaderProps) {
                     <Package className="h-4 w-4" />
                     Marketplace
                   </Link>
+                  <Link href="/novidades" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                    <Newspaper className="h-4 w-4" />
+                    Novidades
+                  </Link>
                   <Link href="/cursos" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors" onClick={() => setMobileMenuOpen(false)}>
                     <GraduationCap className="h-4 w-4" />
                     Cursos
@@ -119,6 +124,10 @@ export function Header({ searchQuery, onSearchChange }: HeaderProps) {
 
           <nav className="hidden items-center gap-6 md:flex">
             <Link href="/" className="text-sm font-medium text-foreground">Marketplace</Link>
+            <Link href="/novidades" className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
+              <Newspaper className="h-3.5 w-3.5" />
+              Novidades
+            </Link>
             <Link href="/cursos" className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
               <GraduationCap className="h-3.5 w-3.5" />
               Cursos
