@@ -18,6 +18,7 @@ import type { Product } from "@/lib/products-data"
 import type { Affiliate } from "@/lib/types"
 import { CoursesAdmin } from "@/components/admin/courses-admin"
 import { UserOrderbumps } from "@/components/admin/user-orderbumps"
+import { NovidadesAdmin } from "@/components/admin/novidades-admin"
 import {
   Plus,
   Edit2,
@@ -56,6 +57,7 @@ import {
   GripVertical,
   ArrowLeft,
   Download,
+  Newspaper,
 } from "lucide-react"
 import type React from "react" // Import React for JSXElement[]
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card" // Import Card components
@@ -107,6 +109,10 @@ export default function AdminPage() {
                     <Megaphone className="h-4 w-4 shrink-0" />
                     <span className="text-xs sm:text-sm">Avisos</span>
                   </TabsTrigger>
+                  <TabsTrigger value="novidades" className="flex items-center gap-2 whitespace-nowrap px-3 py-2">
+                    <Newspaper className="h-4 w-4 shrink-0" />
+                    <span className="text-xs sm:text-sm">Novidades</span>
+                  </TabsTrigger>
                   <TabsTrigger value="dashboard" className="flex items-center gap-2 whitespace-nowrap px-3 py-2">
                     <TrendingUp className="h-4 w-4 shrink-0" />
                     <span className="text-xs sm:text-sm">Dashboard</span>
@@ -133,6 +139,10 @@ export default function AdminPage() {
 
             <TabsContent value="announcements">
               <AnnouncementsAdmin />
+            </TabsContent>
+
+            <TabsContent value="novidades">
+              <NovidadesAdmin />
             </TabsContent>
 
             <TabsContent value="dashboard">

@@ -4,8 +4,9 @@ import { Header } from "@/components/header"
 import { AuthGuard } from "@/components/auth-guard"
 import { NewsDetailClient } from "./news-detail-client"
 
-export default async function NewsDetailPage({ params }: { params: { id: string } }) {
-  const post = await getNewsPost(params.id)
+export default async function NewsDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const post = await getNewsPost(id)
   if (!post) notFound()
 
   return (

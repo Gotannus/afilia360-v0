@@ -4,8 +4,9 @@ import { Header } from "@/components/header"
 import { AuthGuard } from "@/components/auth-guard"
 import { LiveDetailClient } from "./live-detail-client"
 
-export default async function LiveDetailPage({ params }: { params: { id: string } }) {
-  const live = await getLive(params.id)
+export default async function LiveDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const live = await getLive(id)
   if (!live) notFound()
 
   return (
