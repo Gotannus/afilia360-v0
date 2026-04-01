@@ -2540,28 +2540,26 @@ function AnnouncementsAdmin() {
                     {type === "info" ? "Info" : type === "promo" ? "Promoção" : type === "update" ? "Atualização" : "Alerta"}
                   </Button>
                 ))}
-                  </div>
-                </div>
               </div>
-              <div className="mt-4">
-                <Label className="mb-1 block text-xs md:text-sm">Conteúdo completo do artigo *</Label>
-                <textarea
-                  value={newAnnouncement.content}
-                  onChange={(e) => setNewAnnouncement({ ...newAnnouncement, content: e.target.value })}
-                  placeholder="Escreva aqui o conteúdo do artigo..."
-                  className="min-h-[180px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                />
-              </div>
-              {formError && <p className="mt-3 text-sm text-destructive">{formError}</p>}
-              <div className="mt-4 flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setIsAdding(false)}>
-                  Cancelar
-                </Button>
-                <Button onClick={handleAdd} disabled={saving}>
-                  {saving ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Save className="mr-1 h-4 w-4" />}
-                  Salvar
-                </Button>
-              </div>
+            </div>
+            <div className="mt-4">
+              <Label className="mb-1 block text-xs md:text-sm">Conteúdo completo do artigo *</Label>
+              <textarea
+                value={newAnnouncement.content}
+                onChange={(e) => setNewAnnouncement({ ...newAnnouncement, content: e.target.value })}
+                placeholder="Escreva aqui o conteúdo do artigo..."
+                className="min-h-[180px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              />
+            </div>
+            {formError && <p className="mt-3 text-sm text-destructive">{formError}</p>}
+            <div className="mt-4 flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setIsAdding(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleAdd} disabled={saving}>
+                {saving ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Save className="mr-1 h-4 w-4" />}
+                Salvar
+              </Button>
             </div>
 
             <div className="space-y-4 rounded-lg border border-border/60 bg-background/30 p-4">
@@ -2586,24 +2584,6 @@ function AnnouncementsAdmin() {
                 <p className="mt-3 text-[11px] text-muted-foreground">URL final: /avisos/{newAnnouncement.slug || "slug-do-post"}</p>
               </div>
             </div>
-          </div>
-          <div className="mt-4">
-            <Label className="mb-1 block text-xs md:text-sm">Conteúdo completo do artigo</Label>
-            <textarea
-              value={newAnnouncement.content}
-              onChange={(e) => setNewAnnouncement({ ...newAnnouncement, content: e.target.value })}
-              placeholder="Escreva aqui o conteúdo do artigo..."
-              className="min-h-[180px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-            />
-          </div>
-          <div className="mt-4 flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setIsAdding(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleAdd}>
-              <Save className="mr-1 h-4 w-4" />
-              Salvar
-            </Button>
           </div>
         </div>
       )}
