@@ -1,0 +1,19 @@
+import { getLive } from "@/lib/novidades-api"
+import { notFound } from "next/navigation"
+import { Header } from "@/components/header"
+import { AuthGuard } from "@/components/auth-guard"
+import { LiveDetailClient } from "./live-detail-client"
+
+export default async function LiveDetailPage({ params }: { params: { id: string } }) {
+  const live = await getLive(params.id)
+  if (!live) notFound()
+
+  return (
+    <AuthGuard>
+      <div className="min-h-screen bg-background">
+        <Header searchQuery="" onSearchChange={() => {}} />
+        <LiveDetailClient live={live} />
+      </div>
+    </AuthGuard>
+  )
+}
