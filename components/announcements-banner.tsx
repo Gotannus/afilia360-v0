@@ -6,11 +6,6 @@ import { Megaphone, Gift, Sparkles, AlertTriangle, X, Bell } from "lucide-react"
 import { createBrowserClient } from "@supabase/ssr"
 import { Badge } from "@/components/ui/badge"
 
-const supabase = createBrowserClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-)
-
 type Announcement = {
   id: string
   text: string
@@ -52,7 +47,16 @@ const typeConfig = {
 
 const STORAGE_KEY = "afilia360_announcements_dismissed"
 
+function getSupabaseClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (!url || !key) return null
+  return createBrowserClient(url, key)
+}
+
 async function fetchFromSupabase() {
+  const supabase = getSupabaseClient()
+  if (!supabase) return []
   const { data } = await supabase
     .from("announcements")
     .select("*")

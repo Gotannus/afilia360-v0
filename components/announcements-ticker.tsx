@@ -4,8 +4,6 @@ import { useEffect, useState } from "react"
 import { Megaphone, Gift, Sparkles, AlertTriangle } from "lucide-react"
 import { createBrowserClient } from "@supabase/ssr"
 
-const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
-
 type Announcement = {
   id: string
   text: string
@@ -20,6 +18,13 @@ const typeConfig = {
   alert: { icon: AlertTriangle, color: "text-red-400" },
 }
 
+function getSupabaseClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (!url || !key) return null
+  return createBrowserClient(url, key)
+}
+
 export function AnnouncementsTicker() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([])
   const [mounted, setMounted] = useState(false)
@@ -30,6 +35,8 @@ export function AnnouncementsTicker() {
   }, [])
 
   const fetchAnnouncements = async () => {
+    const supabase = getSupabaseClient()
+    if (!supabase) return
     const { data, error } = await supabase
       .from("announcements")
       .select("*")
