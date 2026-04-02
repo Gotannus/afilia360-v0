@@ -2321,17 +2321,43 @@ function AnnouncementsAdmin() {
   const [newAnnouncement, setNewAnnouncement] = useState({
     title: "",
     message: "",
-    excerpt: "",
-    content: "",
-    htmlContent: "",
     coverUrl: "",
     linkUrl: "",
-    materialsJson: "",
     slug: "",
+    attachmentUrl: "",
+    attachmentName: "",
     type: "info" as "info" | "promo" | "update" | "alert",
     contentType: "blog" as "blog" | "lesson" | "live" | "creatives",
     active: true,
   })
+  const [uploadingCover, setUploadingCover] = useState(false)
+  const [uploadingAttachment, setUploadingAttachment] = useState(false)
+
+  const handleFileUpload = async (
+    file: File,
+    field: "cover" | "attachment",
+  ) => {
+    const setter = field === "cover" ? setUploadingCover : setUploadingAttachment
+    setter(true)
+    const formData = new FormData()
+    formData.append("file", file)
+    try {
+      const res = await fetch("/api/upload-attachment", { method: "POST", body: formData })
+      const json = await res.json()
+      if (json.url) {
+        if (field === "cover") {
+          setNewAnnouncement((prev) => ({ ...prev, coverUrl: json.url }))
+        } else {
+          setNewAnnouncement((prev) => ({ ...prev, attachmentUrl: json.url, attachmentName: json.name }))
+        }
+      } else {
+        setFormError(json.error || "Erro ao fazer upload")
+      }
+    } catch {
+      setFormError("Erro de conexão ao fazer upload")
+    }
+    setter(false)
+  }
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -2362,41 +2388,19 @@ function AnnouncementsAdmin() {
   }
 
   const handleAdd = async () => {
-    if (!newAnnouncement.title && !newAnnouncement.message && !newAnnouncement.content) return
+    if (!newAnnouncement.title && !newAnnouncement.message) return
 
     setSaving(true)
     setFormError(null)
 
-    const textFallback = newAnnouncement.message || newAnnouncement.excerpt || newAnnouncement.title
-    let materials: Array<{ label: string; url: string; type?: string }> = []
-
-    if (newAnnouncement.materialsJson.trim()) {
-      try {
-        const parsed = JSON.parse(newAnnouncement.materialsJson)
-        if (Array.isArray(parsed)) {
-          materials = parsed
-        } else {
-          window.alert("Materiais inválidos: use um array JSON.")
-          setSaving(false)
-          return
-        }
-      } catch {
-        window.alert("JSON de materiais inválido.")
-        setSaving(false)
-        return
-      }
-    }
-
     const { error } = await supabase.from("announcements").insert({
       title: newAnnouncement.title || null,
-      text: textFallback,
-      excerpt: newAnnouncement.excerpt || null,
-      content: newAnnouncement.content || null,
-      html_content: newAnnouncement.htmlContent || null,
+      text: newAnnouncement.message || newAnnouncement.title,
       cover_url: newAnnouncement.coverUrl || null,
       link_url: newAnnouncement.linkUrl || null,
-      materials: materials.length > 0 ? materials : null,
       slug: newAnnouncement.slug || null,
+      attachment_url: newAnnouncement.attachmentUrl || null,
+      attachment_name: newAnnouncement.attachmentName || null,
       type: newAnnouncement.type,
       content_type: newAnnouncement.contentType,
       active: newAnnouncement.active,
@@ -2406,13 +2410,11 @@ function AnnouncementsAdmin() {
       setNewAnnouncement({
         title: "",
         message: "",
-        excerpt: "",
-        content: "",
-        htmlContent: "",
         coverUrl: "",
         linkUrl: "",
-        materialsJson: "",
         slug: "",
+        attachmentUrl: "",
+        attachmentName: "",
         type: "info",
         contentType: "blog",
         active: true,
@@ -2498,38 +2500,78 @@ function AnnouncementsAdmin() {
               />
             </div>
             <div>
-              <Label className="mb-1 block text-xs md:text-sm">Resumo</Label>
-              <Input
-                value={newAnnouncement.excerpt}
-                onChange={(e) => setNewAnnouncement({ ...newAnnouncement, excerpt: e.target.value })}
-                placeholder="Uma chamada curta para a listagem do blog."
-                className="text-sm"
-              />
+              <Label className="mb-1 block text-xs md:text-sm">Imagem de capa</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={newAnnouncement.coverUrl}
+                  onChange={(e) => setNewAnnouncement({ ...newAnnouncement, coverUrl: e.target.value })}
+                  placeholder="Cole a URL ou envie um arquivo abaixo"
+                  className="text-sm"
+                />
+              </div>
+              <label className="mt-2 flex cursor-pointer items-center gap-2 rounded-md border border-dashed border-border px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground">
+                {uploadingCover ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Download className="h-4 w-4" />
+                )}
+                {uploadingCover ? "Enviando..." : "Enviar imagem de capa (JPG, PNG, WebP)"}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  className="sr-only"
+                  disabled={uploadingCover}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) handleFileUpload(file, "cover")
+                  }}
+                />
+              </label>
+              {newAnnouncement.coverUrl && (
+                <img
+                  src={newAnnouncement.coverUrl}
+                  alt="Preview da capa"
+                  className="mt-2 h-24 w-full rounded-md border border-border object-cover"
+                  onError={(e) => (e.currentTarget.style.display = "none")}
+                />
+              )}
             </div>
             <div>
-              <Label className="mb-1 block text-xs md:text-sm">Slug (opcional)</Label>
-              <Input
-                value={newAnnouncement.slug}
-                onChange={(e) => setNewAnnouncement({ ...newAnnouncement, slug: e.target.value })}
-                placeholder="ex: manifesto-afilia360"
-                className="text-sm"
-              />
-            </div>
-            <div>
-              <Label className="mb-1 block text-xs md:text-sm">Imagem de capa URL</Label>
-              <Input
-                value={newAnnouncement.coverUrl}
-                onChange={(e) => setNewAnnouncement({ ...newAnnouncement, coverUrl: e.target.value })}
-                placeholder="https://..."
-                className="text-sm"
-              />
+              <Label className="mb-1 block text-xs md:text-sm">Anexo PDF (opcional)</Label>
+              <label className="flex cursor-pointer items-center gap-2 rounded-md border border-dashed border-border px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground">
+                {uploadingAttachment ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Download className="h-4 w-4" />
+                )}
+                {uploadingAttachment
+                  ? "Enviando..."
+                  : newAnnouncement.attachmentName
+                    ? newAnnouncement.attachmentName
+                    : "Enviar PDF ou documento"}
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  className="sr-only"
+                  disabled={uploadingAttachment}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) handleFileUpload(file, "attachment")
+                  }}
+                />
+              </label>
+              {newAnnouncement.attachmentUrl && (
+                <p className="mt-1 truncate text-[11px] text-primary/80">
+                  Anexo salvo: {newAnnouncement.attachmentName || newAnnouncement.attachmentUrl}
+                </p>
+              )}
             </div>
             <div>
               <Label className="mb-1 block text-xs md:text-sm">Link externo (opcional)</Label>
               <Input
                 value={newAnnouncement.linkUrl}
                 onChange={(e) => setNewAnnouncement({ ...newAnnouncement, linkUrl: e.target.value })}
-                placeholder="https://..."
+                placeholder="https://youtube.com/..."
                 className="text-sm"
               />
             </div>
@@ -2580,60 +2622,6 @@ function AnnouncementsAdmin() {
                 ))}
               </div>
             </div>
-            <div>
-              <Label className="mb-2 block text-xs md:text-sm">Tipo de conteúdo do canal</Label>
-              <div className="flex gap-2 flex-wrap">
-                {(["blog", "lesson", "live", "creatives"] as const).map((contentType) => (
-                  <Button
-                    key={contentType}
-                    size="sm"
-                    variant={newAnnouncement.contentType === contentType ? "default" : "outline"}
-                    onClick={() => setNewAnnouncement({ ...newAnnouncement, contentType })}
-                  >
-                    {contentType === "blog"
-                      ? "Post blog"
-                      : contentType === "lesson"
-                        ? "Aula nova"
-                        : contentType === "live"
-                          ? "Live"
-                          : "Criativos"}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          </div>
-          <div className="mt-4">
-            <Label className="mb-1 block text-xs md:text-sm">Conteúdo completo do artigo</Label>
-            <textarea
-              value={newAnnouncement.content}
-              onChange={(e) => setNewAnnouncement({ ...newAnnouncement, content: e.target.value })}
-              placeholder="Escreva aqui o conteúdo do artigo..."
-              className="min-h-[180px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-            />
-          </div>
-          <div className="mt-4">
-            <Label className="mb-1 block text-xs md:text-sm">HTML da aula/live (opcional)</Label>
-            <textarea
-              value={newAnnouncement.htmlContent}
-              onChange={(e) => setNewAnnouncement({ ...newAnnouncement, htmlContent: e.target.value })}
-              placeholder="Cole aqui o HTML completo da aula interativa (claude, quiz, etc)."
-              className="min-h-[180px] w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-xs"
-            />
-            <p className="mt-1 text-[11px] text-muted-foreground">
-              Se preencher HTML, a novidade pode abrir sem link externo usando iframe com srcDoc.
-            </p>
-          </div>
-          <div className="mt-4">
-            <Label className="mb-1 block text-xs md:text-sm">Materiais (JSON opcional)</Label>
-            <textarea
-              value={newAnnouncement.materialsJson}
-              onChange={(e) => setNewAnnouncement({ ...newAnnouncement, materialsJson: e.target.value })}
-              placeholder='[{"label":"Slides PDF","url":"https://.../slides.pdf","type":"pdf"},{"label":"Material HTML","url":"https://.../material.html","type":"html"}]'
-              className="min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-xs"
-            />
-            <p className="mt-1 text-[11px] text-muted-foreground">
-              Dica: para Live + materiais, preencha o Link externo com URL do YouTube e adicione PDF/HTML neste campo.
-            </p>
           </div>
           {formError && (
             <div className="mt-3 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm text-destructive">

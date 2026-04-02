@@ -131,7 +131,7 @@ export function ProductsGrid({ selectedCategory, searchQuery, sortBy, onSortChan
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <span className="rounded-full bg-secondary px-3 py-1 text-sm text-muted-foreground">
+          <span className="rounded-full border border-border bg-secondary px-3 py-1 text-sm text-muted-foreground">
             {filteredProducts.length} produtos
           </span>
         </div>
