@@ -2329,10 +2329,10 @@ function AnnouncementsAdmin() {
     content: "",
     coverUrl: "",
     linkUrl: "",
+    materialsJson: "",
     slug: "",
     type: "info" as "info" | "promo" | "update" | "alert",
-    publicationStatus: "draft" as PublicationStatus,
-    publishedAt: formatDateTimeLocal(new Date()),
+    contentType: "blog" as "blog" | "lesson" | "live" | "creatives",
     active: true,
   })
 
@@ -2368,6 +2368,22 @@ function AnnouncementsAdmin() {
     if (!newAnnouncement.title && !newAnnouncement.message && !newAnnouncement.content) return
 
     const textFallback = newAnnouncement.message || newAnnouncement.excerpt || newAnnouncement.title
+    let materials: Array<{ label: string; url: string; type?: string }> = []
+
+    if (newAnnouncement.materialsJson.trim()) {
+      try {
+        const parsed = JSON.parse(newAnnouncement.materialsJson)
+        if (Array.isArray(parsed)) {
+          materials = parsed
+        } else {
+          window.alert("Materiais inválidos: use um array JSON.")
+          return
+        }
+      } catch {
+        window.alert("JSON de materiais inválido.")
+        return
+      }
+    }
 
     const { error } = await supabase.from("announcements").insert({
       title: newAnnouncement.title || null,
@@ -2376,10 +2392,10 @@ function AnnouncementsAdmin() {
       content: newAnnouncement.content || null,
       cover_url: newAnnouncement.coverUrl || null,
       link_url: newAnnouncement.linkUrl || null,
+      materials: materials.length > 0 ? materials : null,
       slug: newAnnouncement.slug || null,
       type: newAnnouncement.type,
-      publication_status: newAnnouncement.publicationStatus,
-      published_at: publishedAt,
+      content_type: newAnnouncement.contentType,
       active: newAnnouncement.active,
     })
 
@@ -2391,8 +2407,10 @@ function AnnouncementsAdmin() {
         content: "",
         coverUrl: "",
         linkUrl: "",
+        materialsJson: "",
         slug: "",
         type: "info",
+        contentType: "blog",
         active: true,
       })
       setIsAdding(false)
@@ -2431,16 +2449,10 @@ function AnnouncementsAdmin() {
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Gerenciar Avisos</h2>
-        <Button
-          onClick={() => {
-            setIsAdding(!isAdding)
-            setFormError(null)
-          }}
-          className="gap-2"
-        >
+        <h2 className="text-xl font-semibold">Gerenciar Canal de Novidades</h2>
+        <Button onClick={() => setIsAdding(!isAdding)} className="gap-2">
           <Plus className="h-4 w-4" />
-          Novo Aviso
+          Nova Novidade
         </Button>
       </div>
 
@@ -2460,8 +2472,8 @@ function AnnouncementsAdmin() {
 
       {isAdding && (
         <div className="mb-6 rounded-xl border border-primary/30 bg-card p-6">
-          <h3 className="mb-4 font-medium text-base md:text-lg">Novo Aviso</h3>
-          <div className="grid gap-6 lg:grid-cols-[1.3fr_1fr]">
+          <h3 className="mb-4 font-medium text-base md:text-lg">Nova Novidade</h3>
+          <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <Label className="mb-1 block text-xs md:text-sm">Título do Post</Label>
               <Input
@@ -2542,49 +2554,57 @@ function AnnouncementsAdmin() {
                 ))}
               </div>
             </div>
-            <div className="mt-4">
-              <Label className="mb-1 block text-xs md:text-sm">Conteúdo completo do artigo *</Label>
-              <textarea
-                value={newAnnouncement.content}
-                onChange={(e) => setNewAnnouncement({ ...newAnnouncement, content: e.target.value })}
-                placeholder="Escreva aqui o conteúdo do artigo..."
-                className="min-h-[180px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              />
-            </div>
-            {formError && <p className="mt-3 text-sm text-destructive">{formError}</p>}
-            <div className="mt-4 flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setIsAdding(false)}>
-                Cancelar
-              </Button>
-              <Button onClick={handleAdd} disabled={saving}>
-                {saving ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Save className="mr-1 h-4 w-4" />}
-                Salvar
-              </Button>
+            <div>
+              <Label className="mb-2 block text-xs md:text-sm">Tipo de conteúdo do canal</Label>
+              <div className="flex gap-2 flex-wrap">
+                {(["blog", "lesson", "live", "creatives"] as const).map((contentType) => (
+                  <Button
+                    key={contentType}
+                    size="sm"
+                    variant={newAnnouncement.contentType === contentType ? "default" : "outline"}
+                    onClick={() => setNewAnnouncement({ ...newAnnouncement, contentType })}
+                  >
+                    {contentType === "blog"
+                      ? "Post blog"
+                      : contentType === "lesson"
+                        ? "Aula nova"
+                        : contentType === "live"
+                          ? "Live"
+                          : "Criativos"}
+                  </Button>
+                ))}
+              </div>
             </div>
           </div>
-
-          <div className="space-y-4 rounded-lg border border-border/60 bg-background/30 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Preview em tempo real</p>
-              <div className="rounded-lg border border-border bg-card p-3">
-                <p className="text-xs text-muted-foreground">Card/lista</p>
-                <p className="mt-1 font-medium">{newAnnouncement.title || "Título do aviso"}</p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {newAnnouncement.excerpt || "Resumo exibido na listagem do blog."}
-                </p>
-                <p className="mt-2 text-[11px] text-muted-foreground">
-                  {newAnnouncement.publicationStatus === "draft" ? "Rascunho" : "Publicado"} •{" "}
-                  {newAnnouncement.publishedAt ? new Date(newAnnouncement.publishedAt).toLocaleDateString("pt-BR") : "Sem data"}
-                </p>
-              </div>
-              <div className="rounded-lg border border-border bg-card p-3">
-                <p className="text-xs text-muted-foreground">Detalhe</p>
-                <p className="mt-1 text-lg font-semibold">{newAnnouncement.title || "Título do aviso"}</p>
-                <p className="mt-2 whitespace-pre-line text-sm text-muted-foreground">
-                  {newAnnouncement.content || "Conteúdo completo aparecerá aqui em tempo real."}
-                </p>
-                <p className="mt-3 text-[11px] text-muted-foreground">{"URL final: /avisos/"}{newAnnouncement.slug || "slug-do-post"}</p>
-              </div>
-            </div>
+          <div className="mt-4">
+            <Label className="mb-1 block text-xs md:text-sm">Conteúdo completo do artigo</Label>
+            <textarea
+              value={newAnnouncement.content}
+              onChange={(e) => setNewAnnouncement({ ...newAnnouncement, content: e.target.value })}
+              placeholder="Escreva aqui o conteúdo do artigo..."
+              className="min-h-[180px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+            />
+          </div>
+          <div className="mt-4">
+            <Label className="mb-1 block text-xs md:text-sm">Materiais (JSON opcional)</Label>
+            <textarea
+              value={newAnnouncement.materialsJson}
+              onChange={(e) => setNewAnnouncement({ ...newAnnouncement, materialsJson: e.target.value })}
+              placeholder='[{"label":"Slides PDF","url":"https://.../slides.pdf","type":"pdf"},{"label":"Material HTML","url":"https://.../material.html","type":"html"}]'
+              className="min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-xs"
+            />
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              Dica: para Live + materiais, preencha o Link externo com URL do YouTube e adicione PDF/HTML neste campo.
+            </p>
+          </div>
+          <div className="mt-4 flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setIsAdding(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleAdd}>
+              <Save className="mr-1 h-4 w-4" />
+              Salvar
+            </Button>
           </div>
         </div>
       )}
@@ -2592,7 +2612,7 @@ function AnnouncementsAdmin() {
       <div className="space-y-4">
         {announcements.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border p-8 text-center text-muted-foreground">
-            Nenhum aviso cadastrado
+            Nenhuma novidade cadastrada
           </div>
         ) : (
           announcements.map((announcement) => (
@@ -2615,6 +2635,9 @@ function AnnouncementsAdmin() {
                     </p>
                     <p className="mt-2 text-xs text-muted-foreground">
                       {announcement.created_at ? new Date(announcement.created_at).toLocaleDateString("pt-BR") : ""}
+                    </p>
+                    <p className="mt-1 text-xs text-primary/80">
+                      Tipo do canal: {announcement.content_type || "blog"}
                     </p>
                   </div>
                   <Badge

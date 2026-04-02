@@ -53,14 +53,29 @@ export function NovidadesFeed({ posts }: { posts: NoticePost[] }) {
   const [open, setOpen] = useState(false)
   const [activePost, setActivePost] = useState<NoticePost | null>(null)
   const [activeMaterialUrl, setActiveMaterialUrl] = useState<string | null>(null)
+  const [typeFilter, setTypeFilter] = useState<NoticePost["contentType"] | "all">("all")
+  const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc")
+  const filteredAndSortedPosts = useMemo(() => {
+    const filtered = typeFilter === "all" ? [...posts] : posts.filter((post) => post.contentType === typeFilter)
+    return filtered.sort((a, b) => {
+      const diff = new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+      return sortOrder === "desc" ? diff : -diff
+    })
+  }, [posts, sortOrder, typeFilter])
+  const featuredPost = useMemo(() => {
+    const now = new Date()
+    return filteredAndSortedPosts.find((post) => {
+      const postDate = new Date(post.publishedAt)
+      return postDate.getMonth() === now.getMonth() && postDate.getFullYear() === now.getFullYear()
+    })
+  }, [filteredAndSortedPosts])
   const groupedPosts = useMemo(() => {
-    const sorted = [...posts].sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
-    return sorted.reduce<Record<string, NoticePost[]>>((acc, post) => {
+    return filteredAndSortedPosts.reduce<Record<string, NoticePost[]>>((acc, post) => {
       const monthKey = monthLabel.format(new Date(post.publishedAt))
       acc[monthKey] = acc[monthKey] ? [...acc[monthKey], post] : [post]
       return acc
     }, {})
-  }, [posts])
+  }, [filteredAndSortedPosts])
 
   const openImmersiveModal = (post: NoticePost) => {
     setActivePost(post)
@@ -70,7 +85,67 @@ export function NovidadesFeed({ posts }: { posts: NoticePost[] }) {
 
   return (
     <>
+      {featuredPost && (
+        <section className="premium-hero mb-8 overflow-hidden p-5 sm:p-6">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Destaque do mês</p>
+          <h2 className="premium-title-section mt-2">{featuredPost.title}</h2>
+          <p className="mt-2 max-w-3xl text-sm text-muted-foreground">{featuredPost.excerpt}</p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {(featuredPost.contentType === "lesson" || featuredPost.contentType === "live") && featuredPost.externalUrl ? (
+              <Button size="sm" className="gap-2" onClick={() => openImmersiveModal(featuredPost)}>
+                Abrir destaque
+                <PlayCircle className="h-4 w-4" />
+              </Button>
+            ) : (
+              <Link href={`/avisos/${featuredPost.slug}`}>
+                <Button size="sm" className="gap-2">
+                  Ver destaque
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+            )}
+          </div>
+        </section>
+      )}
+
+      <div className="mb-6 flex flex-wrap items-center gap-2 rounded-[var(--radius-premium)] border border-border/60 bg-black/15 p-3">
+        {(["all", "blog", "lesson", "live", "creatives"] as const).map((filter) => (
+          <Button
+            key={filter}
+            size="sm"
+            variant={typeFilter === filter ? "default" : "outline"}
+            onClick={() => setTypeFilter(filter)}
+            className="h-8"
+          >
+            {filter === "all"
+              ? "Todos"
+              : filter === "blog"
+                ? "Blog"
+                : filter === "lesson"
+                  ? "Aula"
+                  : filter === "live"
+                    ? "Live"
+                    : "Criativos"}
+          </Button>
+        ))}
+
+        <div className="ml-auto flex items-center gap-2">
+          <span className="text-xs text-muted-foreground">Ordem</span>
+          <Button size="sm" variant={sortOrder === "desc" ? "default" : "outline"} onClick={() => setSortOrder("desc")} className="h-8">
+            Mais recente
+          </Button>
+          <Button size="sm" variant={sortOrder === "asc" ? "default" : "outline"} onClick={() => setSortOrder("asc")} className="h-8">
+            Mais antigo
+          </Button>
+        </div>
+      </div>
+
       <div className="space-y-10">
+        {Object.keys(groupedPosts).length === 0 && (
+          <div className="rounded-[var(--radius-premium)] border border-dashed border-border/70 p-8 text-center text-sm text-muted-foreground">
+            Nenhuma novidade encontrada para o filtro selecionado.
+          </div>
+        )}
         {Object.entries(groupedPosts).map(([month, monthPosts]) => (
           <section key={month}>
             <div className="mb-4 flex items-center justify-between gap-3">
