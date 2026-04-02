@@ -101,7 +101,7 @@ export default function AdminPage() {
                   </TabsTrigger>
                   <TabsTrigger value="announcements" className="flex items-center gap-2 whitespace-nowrap px-3 py-2">
                     <Megaphone className="h-4 w-4 shrink-0" />
-                    <span className="text-xs sm:text-sm">Avisos</span>
+                    <span className="text-xs sm:text-sm">Novidades</span>
                   </TabsTrigger>
                   <TabsTrigger value="dashboard" className="flex items-center gap-2 whitespace-nowrap px-3 py-2">
                     <TrendingUp className="h-4 w-4 shrink-0" />
@@ -2296,10 +2296,13 @@ function AnnouncementsAdmin() {
     message: "",
     excerpt: "",
     content: "",
+    htmlContent: "",
     coverUrl: "",
     linkUrl: "",
+    materialsJson: "",
     slug: "",
     type: "info" as "info" | "promo" | "update" | "alert",
+    contentType: "blog" as "blog" | "lesson" | "live" | "creatives",
     active: true,
   })
 
@@ -2326,16 +2329,35 @@ function AnnouncementsAdmin() {
     if (!newAnnouncement.title && !newAnnouncement.message && !newAnnouncement.content) return
 
     const textFallback = newAnnouncement.message || newAnnouncement.excerpt || newAnnouncement.title
+    let materials: Array<{ label: string; url: string; type?: string }> = []
+
+    if (newAnnouncement.materialsJson.trim()) {
+      try {
+        const parsed = JSON.parse(newAnnouncement.materialsJson)
+        if (Array.isArray(parsed)) {
+          materials = parsed
+        } else {
+          window.alert("Materiais inválidos: use um array JSON.")
+          return
+        }
+      } catch {
+        window.alert("JSON de materiais inválido.")
+        return
+      }
+    }
 
     const { error } = await supabase.from("announcements").insert({
       title: newAnnouncement.title || null,
       text: textFallback,
       excerpt: newAnnouncement.excerpt || null,
       content: newAnnouncement.content || null,
+      html_content: newAnnouncement.htmlContent || null,
       cover_url: newAnnouncement.coverUrl || null,
       link_url: newAnnouncement.linkUrl || null,
+      materials: materials.length > 0 ? materials : null,
       slug: newAnnouncement.slug || null,
       type: newAnnouncement.type,
+      content_type: newAnnouncement.contentType,
       active: newAnnouncement.active,
     })
 
@@ -2345,10 +2367,13 @@ function AnnouncementsAdmin() {
         message: "",
         excerpt: "",
         content: "",
+        htmlContent: "",
         coverUrl: "",
         linkUrl: "",
+        materialsJson: "",
         slug: "",
         type: "info",
+        contentType: "blog",
         active: true,
       })
       setIsAdding(false)
@@ -2383,16 +2408,16 @@ function AnnouncementsAdmin() {
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Gerenciar Avisos</h2>
+        <h2 className="text-xl font-semibold">Gerenciar Canal de Novidades</h2>
         <Button onClick={() => setIsAdding(!isAdding)} className="gap-2">
           <Plus className="h-4 w-4" />
-          Novo Aviso
+          Nova Novidade
         </Button>
       </div>
 
       {isAdding && (
         <div className="mb-6 rounded-xl border border-primary/30 bg-card p-6">
-          <h3 className="mb-4 font-medium text-base md:text-lg">Novo Aviso</h3>
+          <h3 className="mb-4 font-medium text-base md:text-lg">Nova Novidade</h3>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <Label className="mb-1 block text-xs md:text-sm">Título do Post</Label>
@@ -2480,6 +2505,27 @@ function AnnouncementsAdmin() {
                 ))}
               </div>
             </div>
+            <div>
+              <Label className="mb-2 block text-xs md:text-sm">Tipo de conteúdo do canal</Label>
+              <div className="flex gap-2 flex-wrap">
+                {(["blog", "lesson", "live", "creatives"] as const).map((contentType) => (
+                  <Button
+                    key={contentType}
+                    size="sm"
+                    variant={newAnnouncement.contentType === contentType ? "default" : "outline"}
+                    onClick={() => setNewAnnouncement({ ...newAnnouncement, contentType })}
+                  >
+                    {contentType === "blog"
+                      ? "Post blog"
+                      : contentType === "lesson"
+                        ? "Aula nova"
+                        : contentType === "live"
+                          ? "Live"
+                          : "Criativos"}
+                  </Button>
+                ))}
+              </div>
+            </div>
           </div>
           <div className="mt-4">
             <Label className="mb-1 block text-xs md:text-sm">Conteúdo completo do artigo</Label>
@@ -2489,6 +2535,30 @@ function AnnouncementsAdmin() {
               placeholder="Escreva aqui o conteúdo do artigo..."
               className="min-h-[180px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             />
+          </div>
+          <div className="mt-4">
+            <Label className="mb-1 block text-xs md:text-sm">HTML da aula/live (opcional)</Label>
+            <textarea
+              value={newAnnouncement.htmlContent}
+              onChange={(e) => setNewAnnouncement({ ...newAnnouncement, htmlContent: e.target.value })}
+              placeholder="Cole aqui o HTML completo da aula interativa (claude, quiz, etc)."
+              className="min-h-[180px] w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-xs"
+            />
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              Se preencher HTML, a novidade pode abrir sem link externo usando iframe com srcDoc.
+            </p>
+          </div>
+          <div className="mt-4">
+            <Label className="mb-1 block text-xs md:text-sm">Materiais (JSON opcional)</Label>
+            <textarea
+              value={newAnnouncement.materialsJson}
+              onChange={(e) => setNewAnnouncement({ ...newAnnouncement, materialsJson: e.target.value })}
+              placeholder='[{"label":"Slides PDF","url":"https://.../slides.pdf","type":"pdf"},{"label":"Material HTML","url":"https://.../material.html","type":"html"}]'
+              className="min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-xs"
+            />
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              Dica: para Live + materiais, preencha o Link externo com URL do YouTube e adicione PDF/HTML neste campo.
+            </p>
           </div>
           <div className="mt-4 flex justify-end gap-2">
             <Button variant="outline" onClick={() => setIsAdding(false)}>
@@ -2505,7 +2575,7 @@ function AnnouncementsAdmin() {
       <div className="space-y-4">
         {announcements.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border p-8 text-center text-muted-foreground">
-            Nenhum aviso cadastrado
+            Nenhuma novidade cadastrada
           </div>
         ) : (
           announcements.map((announcement) => (
@@ -2528,6 +2598,9 @@ function AnnouncementsAdmin() {
                     </p>
                     <p className="mt-2 text-xs text-muted-foreground">
                       {announcement.created_at ? new Date(announcement.created_at).toLocaleDateString("pt-BR") : ""}
+                    </p>
+                    <p className="mt-1 text-xs text-primary/80">
+                      Tipo do canal: {announcement.content_type || "blog"}
                     </p>
                   </div>
                   <Badge

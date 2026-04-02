@@ -7,7 +7,7 @@ import { useRouter, usePathname } from "next/navigation"
 import { getSession } from "@/lib/auth"
 import { Loader2 } from "lucide-react"
 
-const publicRoutes = ["/login", "/cadastro", "/admin", "/aula-gratuita", "/sobre", "/enviar-produto", "/avisos"]
+const publicRoutes = ["/login", "/cadastro", "/admin", "/aula-gratuita", "/sobre", "/enviar-produto", "/avisos", "/novidades"]
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const [isChecking, setIsChecking] = useState(true)
@@ -16,18 +16,23 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
 
   useEffect(() => {
-    const session = getSession()
-    const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route))
+    try {
+      const session = getSession()
+      const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route))
 
-    if (!session?.loggedIn && !isPublicRoute) {
-      router.push("/login")
-    } else if (session?.loggedIn && (pathname === "/login" || pathname === "/cadastro")) {
-      router.push("/")
-    } else {
-      setIsAuthenticated(true)
+      if (!session?.loggedIn && !isPublicRoute) {
+        router.push("/login")
+      } else if (session?.loggedIn && (pathname === "/login" || pathname === "/cadastro")) {
+        router.push("/")
+      } else {
+        setIsAuthenticated(true)
+      }
+    } catch (error) {
+      console.error("Erro no AuthGuard:", error)
+      setIsAuthenticated(false)
+    } finally {
+      setIsChecking(false)
     }
-
-    setIsChecking(false)
   }, [pathname, router])
 
   if (isChecking) {
