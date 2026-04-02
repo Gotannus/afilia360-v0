@@ -51,7 +51,7 @@ export function AnnouncementsTicker() {
         {/* Label fixo */}
         <div className="z-10 flex shrink-0 items-center gap-2 border-r border-border bg-primary px-4 py-2">
           <Megaphone className="h-4 w-4 text-primary-foreground" />
-          <span className="text-xs font-semibold uppercase tracking-wider text-primary-foreground">Avisos</span>
+          <span className="text-xs font-semibold uppercase tracking-wider text-primary-foreground">Novidades</span>
         </div>
 
         <div className="relative flex-1 overflow-hidden py-2">
