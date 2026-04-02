@@ -24,15 +24,27 @@ export async function getNewsPosts(category?: string): Promise<NewsPost[]> {
   return (data ?? []) as NewsPost[]
 }
 
-export async function getNewsPost(id: string): Promise<NewsPost | null> {
+export async function getNewsPost(idOrSlug: string): Promise<NewsPost | null> {
   const supabase = getClient()
-  const { data, error } = await supabase
-    .from("news_posts")
-    .select("*")
-    .eq("id", id)
-    .single()
-  if (error) return null
-  return data as NewsPost
+
+  // Tenta buscar pelo ID (UUID) primeiro
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrSlug)
+  if (isUuid) {
+    const { data } = await supabase.from("news_posts").select("*").eq("id", idOrSlug).maybeSingle()
+    if (data) return data as NewsPost
+  }
+
+  // Fallback: busca por slug (se existir coluna slug na tabela)
+  const { data: bySlug } = await supabase.from("news_posts").select("*").eq("slug", idOrSlug).maybeSingle()
+  if (bySlug) return bySlug as NewsPost
+
+  // Não UUID — tenta buscar por id como string direta
+  if (!isUuid) {
+    const { data: byId } = await supabase.from("news_posts").select("*").eq("id", idOrSlug).maybeSingle()
+    if (byId) return byId as NewsPost
+  }
+
+  return null
 }
 
 export async function getAllNewsPostsAdmin(): Promise<NewsPost[]> {

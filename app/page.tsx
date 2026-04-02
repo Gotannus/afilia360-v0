@@ -20,8 +20,8 @@ export default function HomePage() {
       <AnnouncementsBanner />
       <RankingBanner />
 
-      <div className="mx-auto max-w-7xl px-6 py-8">
-        <div className="flex gap-8">
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
+        <div className="flex flex-col gap-6 lg:flex-row lg:gap-8">
           <Sidebar
             selectedCategory={selectedCategory}
             onCategoryChange={setSelectedCategory}

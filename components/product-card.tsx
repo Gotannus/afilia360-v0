@@ -341,9 +341,9 @@ export function ProductCard({ product }: ProductCardProps) {
 
       {/* Dialog da Estratégia */}
       <Dialog open={strategyOpen} onOpenChange={setStrategyOpen}>
-        <DialogContent className="max-w-lg bg-zinc-900 border-zinc-700">
+        <DialogContent className="max-w-lg border-border bg-card">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-white">
+            <DialogTitle className="flex items-center gap-2 text-foreground">
               <Lightbulb className="h-5 w-5 text-emerald-400" />
               Estratégia Recomendada
             </DialogTitle>
@@ -356,12 +356,12 @@ export function ProductCard({ product }: ProductCardProps) {
                 className="h-16 w-16 rounded-lg object-cover"
               />
               <div>
-                <h4 className="font-semibold text-white">{product.title}</h4>
-                <p className="text-sm text-gray-400">{product.nicho}</p>
+                <h4 className="font-semibold text-foreground">{product.title}</h4>
+                <p className="text-sm text-muted-foreground">{product.nicho}</p>
               </div>
             </div>
-            <div className="rounded-lg bg-zinc-800/50 p-4 border border-zinc-700">
-              <p className="text-sm text-white whitespace-pre-wrap leading-relaxed">
+            <div className="rounded-lg border border-border bg-secondary/50 p-4">
+              <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
                 {product.estrategia || "Nenhuma estratégia definida."}
               </p>
             </div>
@@ -375,9 +375,9 @@ export function ProductCard({ product }: ProductCardProps) {
       </Dialog>
 
       <Dialog open={affiliatePopupOpen} onOpenChange={setAffiliatePopupOpen}>
-        <DialogContent className="max-w-md bg-zinc-900 border-zinc-700">
+        <DialogContent className="max-w-md border-border bg-card">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-white">
+            <DialogTitle className="flex items-center gap-2 text-foreground">
               <UserPlus className="h-5 w-5 text-primary" />
               Afiliar-se a {product.title}
             </DialogTitle>
@@ -395,8 +395,8 @@ export function ProductCard({ product }: ProductCardProps) {
                 <UserPlus className="h-5 w-5 text-emerald-400" />
               </div>
               <div className="flex-1">
-                <h4 className="font-semibold text-white">Não tem conta na Celetus?</h4>
-                <p className="text-sm text-gray-400">Crie sua conta gratuita aqui</p>
+                <h4 className="font-semibold text-foreground">Não tem conta na Celetus?</h4>
+                <p className="text-sm text-muted-foreground">Crie sua conta gratuita aqui</p>
               </div>
               <ExternalLink className="h-4 w-4 text-emerald-400" />
             </a>
@@ -412,8 +412,8 @@ export function ProductCard({ product }: ProductCardProps) {
                 <Link2 className="h-5 w-5 text-primary" />
               </div>
               <div className="flex-1">
-                <h4 className="font-semibold text-white">Já tem conta na Celetus?</h4>
-                <p className="text-sm text-gray-400">Afiliar-se ao produto agora!</p>
+                <h4 className="font-semibold text-foreground">Já tem conta na Celetus?</h4>
+                <p className="text-sm text-muted-foreground">Afiliar-se ao produto agora!</p>
               </div>
               <ExternalLink className="h-4 w-4 text-primary" />
             </a>
@@ -430,8 +430,8 @@ export function ProductCard({ product }: ProductCardProps) {
                   <Store className="h-5 w-5 text-red-400" />
                 </div>
                 <div className="flex-1">
-                  <h4 className="font-semibold text-white">Afiliar pela Hotmart</h4>
-                  <p className="text-sm text-gray-400">Afiliar-se ao produto na Hotmart</p>
+                  <h4 className="font-semibold text-foreground">Afiliar pela Hotmart</h4>
+                  <p className="text-sm text-muted-foreground">Afiliar-se ao produto na Hotmart</p>
                 </div>
                 <ExternalLink className="h-4 w-4 text-red-400" />
               </a>
@@ -440,10 +440,10 @@ export function ProductCard({ product }: ProductCardProps) {
             {/* Divisor */}
             <div className="relative py-2">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-zinc-700"></div>
+                <div className="w-full border-t border-border"></div>
               </div>
               <div className="relative flex justify-center">
-                <span className="bg-zinc-900 px-3 text-xs text-gray-500">MATERIAIS</span>
+                <span className="bg-card px-3 text-xs text-muted-foreground">MATERIAIS</span>
               </div>
             </div>
 
@@ -459,8 +459,8 @@ export function ProductCard({ product }: ProductCardProps) {
                   <FolderOpen className="h-5 w-5 text-amber-400" />
                 </div>
                 <div className="flex-1">
-                  <h4 className="font-semibold text-white">Drive de Criativos</h4>
-                  <p className="text-sm text-gray-400">Acesse criativos e página de vendas</p>
+                  <h4 className="font-semibold text-foreground">Drive de Criativos</h4>
+                  <p className="text-sm text-muted-foreground">Acesse criativos e página de vendas</p>
                 </div>
                 <ExternalLink className="h-4 w-4 text-amber-400" />
               </a>
@@ -475,8 +475,8 @@ export function ProductCard({ product }: ProductCardProps) {
                 <PlayCircle className="h-5 w-5 text-blue-400" />
               </div>
               <div className="flex-1">
-                <h4 className="font-semibold text-white">Aula Passo a Passo</h4>
-                <p className="text-sm text-gray-400">Aprenda a subir sua campanha</p>
+                <h4 className="font-semibold text-foreground">Aula Passo a Passo</h4>
+                <p className="text-sm text-muted-foreground">Aprenda a subir sua campanha</p>
               </div>
             </a>
           </div>
