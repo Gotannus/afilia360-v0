@@ -1,6 +1,7 @@
 import { Suspense } from "react"
 import { fetchNoticePosts } from "@/lib/announcements-blog"
 import { NovidadesPageClient } from "./novidades-client"
+export const dynamic = 'force-dynamic'
 
 export const metadata = {
   title: "Novidades | Afilia360",
