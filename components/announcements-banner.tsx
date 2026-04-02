@@ -107,7 +107,7 @@ export function AnnouncementsBanner() {
               href="/avisos"
               className="rounded px-2 py-0.5 text-xs text-primary transition-colors hover:text-primary/80"
             >
-              Ver blog de avisos
+              Ver canal de novidades
             </Link>
             <button
               onClick={handleDismiss}

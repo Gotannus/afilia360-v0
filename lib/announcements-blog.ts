@@ -6,10 +6,12 @@ export type NoticePost = {
   title: string
   excerpt: string
   content: string
+  contentType: "blog" | "lesson" | "live" | "creatives"
   category: "info" | "promo" | "update" | "alert"
   publishedAt: string
   coverImage: string | null
   externalUrl: string | null
+  materials: Array<{ label: string; url: string }>
 }
 
 function slugify(value: string) {
@@ -26,6 +28,22 @@ function mapNoticePost(row: any): NoticePost {
   const content = row.content || row.body || row.text || ""
   const excerpt = row.excerpt || row.summary || row.text || content.slice(0, 160)
   const publishedAt = row.published_at || row.created_at || new Date().toISOString()
+  const normalizedType = String(row.content_type || row.post_type || row.kind || row.type || "blog").toLowerCase()
+  const contentType: NoticePost["contentType"] =
+    normalizedType === "lesson" || normalizedType === "aula" || normalizedType === "aula_nova"
+      ? "lesson"
+      : normalizedType === "live"
+        ? "live"
+        : normalizedType === "creative" || normalizedType === "creatives" || normalizedType === "criativos_validados"
+          ? "creatives"
+          : "blog"
+  const rawMaterials = Array.isArray(row.materials) ? row.materials : []
+  const materials = rawMaterials
+    .map((material: any) => ({
+      label: material?.label || material?.title || "Material complementar",
+      url: material?.url || material?.href || "",
+    }))
+    .filter((material: { label: string; url: string }) => Boolean(material.url))
 
   return {
     id: String(row.id),
@@ -33,10 +51,12 @@ function mapNoticePost(row: any): NoticePost {
     title,
     excerpt,
     content,
+    contentType,
     category: row.type || "info",
     publishedAt,
     coverImage: row.cover_url || row.image_url || null,
-    externalUrl: row.link_url || row.cta_url || null,
+    externalUrl: row.link_url || row.cta_url || row.lesson_url || row.video_url || row.live_url || null,
+    materials,
   }
 }
 
