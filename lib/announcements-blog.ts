@@ -11,7 +11,7 @@ export type NoticePost = {
   publishedAt: string
   coverImage: string | null
   externalUrl: string | null
-  materials: Array<{ label: string; url: string }>
+  materials: Array<{ label: string; url: string; type: "html" | "pdf" | "link" }>
 }
 
 function slugify(value: string) {
@@ -37,13 +37,33 @@ function mapNoticePost(row: any): NoticePost {
         : normalizedType === "creative" || normalizedType === "creatives" || normalizedType === "criativos_validados"
           ? "creatives"
           : "blog"
-  const rawMaterials = Array.isArray(row.materials) ? row.materials : []
+  const parseMaterials = () => {
+    if (Array.isArray(row.materials)) return row.materials
+    if (typeof row.materials === "string") {
+      try {
+        const parsed = JSON.parse(row.materials)
+        return Array.isArray(parsed) ? parsed : []
+      } catch {
+        return []
+      }
+    }
+    return []
+  }
+  const inferMaterialType = (url: string, explicitType?: string): "html" | "pdf" | "link" => {
+    const normalized = (explicitType || "").toLowerCase()
+    if (normalized === "html" || normalized === "pdf") return normalized
+    if (url.match(/\.pdf($|\?)/i)) return "pdf"
+    if (url.match(/\.html?($|\?)/i)) return "html"
+    return "link"
+  }
+  const rawMaterials = parseMaterials()
   const materials = rawMaterials
     .map((material: any) => ({
       label: material?.label || material?.title || "Material complementar",
       url: material?.url || material?.href || "",
+      type: inferMaterialType(material?.url || material?.href || "", material?.type),
     }))
-    .filter((material: { label: string; url: string }) => Boolean(material.url))
+    .filter((material: { label: string; url: string; type: "html" | "pdf" | "link" }) => Boolean(material.url))
 
   return {
     id: String(row.id),
