@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server"
+import { createClient } from "@supabase/supabase-js"
 
 export type NoticePost = {
   id: string
@@ -91,7 +91,7 @@ function mapNoticePost(row: any): NoticePost {
 }
 
 export async function fetchNoticePosts(limit = 50): Promise<NoticePost[]> {
-  const supabase = await createClient()
+    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
   const { data, error } = await supabase
     .from("announcements")
     .select("*")
