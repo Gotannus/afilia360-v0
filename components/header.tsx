@@ -14,7 +14,6 @@ import {
   Menu,
   Package,
   Trophy,
-  Newspaper,
   HelpCircle,
   Megaphone,
   Gift,
