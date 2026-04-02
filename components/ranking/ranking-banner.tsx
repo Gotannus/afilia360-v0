@@ -20,13 +20,18 @@ export function RankingBanner() {
 
   useEffect(() => {
     async function fetchRanking() {
-      const supabase = createClient()
+      let supabase: ReturnType<typeof createClient> | null = null
+      try {
+        supabase = createClient()
+      } catch (error) {
+        console.error("RankingBanner desabilitado por falta de config Supabase:", error)
+        setIsLoading(false)
+        return
+      }
+
       const now = new Date()
       const currentMonth = now.getMonth() + 1
       const year = now.getFullYear()
-
-      const startOfMonth = new Date(year, currentMonth - 1, 1).toISOString()
-      const endOfMonth = new Date(year, currentMonth, 0, 23, 59, 59).toISOString()
 
       const [rankingResult, monthlySalesResult] = await Promise.all([
         supabase
@@ -39,12 +44,7 @@ export function RankingBanner() {
           .eq("year", year)
           .order("sales_count", { ascending: false })
           .limit(5),
-        supabase
-          .from("monthly_total_sales")
-          .select("total_sales")
-          .eq("month", currentMonth)
-          .eq("year", year)
-          .maybeSingle(),
+        supabase.from("monthly_total_sales").select("total_sales").eq("month", currentMonth).eq("year", year).maybeSingle(),
       ])
 
       if (rankingResult.error || !rankingResult.data || rankingResult.data.length === 0) {

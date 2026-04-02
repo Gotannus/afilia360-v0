@@ -81,6 +81,15 @@ function productToDb(product: Omit<Product, "id"> & { id?: string }) {
 let productsCache: { data: Product[]; timestamp: number } | null = null
 const CACHE_DURATION = 5 * 60 * 1000 // 5 minutos
 
+function getSupabaseClientSafe() {
+  try {
+    return createClient()
+  } catch (error) {
+    console.error("[v0] Supabase indisponível no client:", error)
+    return null
+  }
+}
+
 export async function fetchProducts(): Promise<Product[]> {
   // Verificar cache
   if (productsCache && Date.now() - productsCache.timestamp < CACHE_DURATION) {
@@ -88,7 +97,13 @@ export async function fetchProducts(): Promise<Product[]> {
     return productsCache.data
   }
 
-  const supabase = createClient()
+  const supabase = getSupabaseClientSafe()
+  if (!supabase) {
+    if (productsCache) {
+      return productsCache.data
+    }
+    return []
+  }
   
   // Selecionar apenas os campos necessários para reduzir egress
   const { data, error } = await supabase
@@ -152,7 +167,8 @@ export async function fetchProducts(): Promise<Product[]> {
 
 export async function addProductToDb(product: Omit<Product, "id">): Promise<Product | null> {
   debugLog("[v0] Tentando adicionar produto:", product.title)
-  const supabase = createClient()
+  const supabase = getSupabaseClientSafe()
+  if (!supabase) return null
   const productData = productToDb(product)
   debugLog("[v0] Dados do produto convertidos para DB:", productData)
   
@@ -170,7 +186,8 @@ export async function addProductToDb(product: Omit<Product, "id">): Promise<Prod
 
 export async function updateProductInDb(id: string, product: Partial<Product>): Promise<Product | null> {
   debugLog("[v0] Tentando atualizar produto:", id, product.title)
-  const supabase = createClient()
+  const supabase = getSupabaseClientSafe()
+  if (!supabase) return null
   const productData = productToDb(product as Product)
   debugLog("[v0] Dados do produto convertidos para atualização:", productData)
   
@@ -193,7 +210,8 @@ export async function updateProductInDb(id: string, product: Partial<Product>): 
 
 export async function deleteProductFromDb(id: string): Promise<boolean> {
   debugLog("[v0] Tentando deletar produto:", id)
-  const supabase = createClient()
+  const supabase = getSupabaseClientSafe()
+  if (!supabase) return false
   const { error } = await supabase.from("marketplace_products").delete().eq("id", id)
 
   if (error) {

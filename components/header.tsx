@@ -14,7 +14,6 @@ import {
   Menu,
   Package,
   Trophy,
-  Newspaper,
   HelpCircle,
   Megaphone,
   Gift,
@@ -91,9 +90,9 @@ export function Header({ searchQuery, onSearchChange }: HeaderProps) {
                     <Trophy className="h-4 w-4" />
                     Ranking
                   </Link>
-                  <Link href="/avisos" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors" onClick={() => setMobileMenuOpen(false)}>
-                    <Newspaper className="h-4 w-4" />
-                    Avisos
+                  <Link href="/novidades" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                    <Megaphone className="h-4 w-4" />
+                    Novidades
                   </Link>
                   <a href="#" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors">
                     <HelpCircle className="h-4 w-4" />
@@ -124,7 +123,7 @@ export function Header({ searchQuery, onSearchChange }: HeaderProps) {
               Cursos
             </Link>
             <Link href="/ranking" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Ranking</Link>
-            <Link href="/avisos" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Avisos</Link>
+            <Link href="/novidades" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Novidades</Link>
             <a href="#" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Suporte</a>
             {isAdminUser && (
               <Link href="/admin" className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
@@ -173,7 +172,7 @@ export function Header({ searchQuery, onSearchChange }: HeaderProps) {
                 </div>
                 <div className="max-h-72 overflow-y-auto py-1">
                   {announcements.map((a) => {
-                    const cfg = typeConfig[a.type]
+                    const cfg = typeConfig[a.type as keyof typeof typeConfig] ?? typeConfig.info
                     const Icon = cfg.icon
                     return (
                       <div key={a.id} className="relative flex items-start gap-3 px-4 py-3 hover:bg-muted/50 transition-colors">

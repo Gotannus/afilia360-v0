@@ -31,9 +31,15 @@ export function ProductsGrid({ selectedCategory, searchQuery, sortBy, onSortChan
   useEffect(() => {
     async function loadProducts() {
       setLoading(true)
-      const data = await fetchProducts()
-      setProducts(data)
-      setLoading(false)
+      try {
+        const data = await fetchProducts()
+        setProducts(data)
+      } catch (error) {
+        console.error("Falha ao carregar produtos:", error)
+        setProducts([])
+      } finally {
+        setLoading(false)
+      }
     }
     loadProducts()
   }, [])
