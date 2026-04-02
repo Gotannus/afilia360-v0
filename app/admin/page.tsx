@@ -2324,10 +2324,40 @@ function AnnouncementsAdmin() {
     coverUrl: "",
     linkUrl: "",
     slug: "",
+    attachmentUrl: "",
+    attachmentName: "",
     type: "info" as "info" | "promo" | "update" | "alert",
     contentType: "blog" as "blog" | "lesson" | "live" | "creatives",
     active: true,
   })
+  const [uploadingCover, setUploadingCover] = useState(false)
+  const [uploadingAttachment, setUploadingAttachment] = useState(false)
+
+  const handleFileUpload = async (
+    file: File,
+    field: "cover" | "attachment",
+  ) => {
+    const setter = field === "cover" ? setUploadingCover : setUploadingAttachment
+    setter(true)
+    const formData = new FormData()
+    formData.append("file", file)
+    try {
+      const res = await fetch("/api/upload-attachment", { method: "POST", body: formData })
+      const json = await res.json()
+      if (json.url) {
+        if (field === "cover") {
+          setNewAnnouncement((prev) => ({ ...prev, coverUrl: json.url }))
+        } else {
+          setNewAnnouncement((prev) => ({ ...prev, attachmentUrl: json.url, attachmentName: json.name }))
+        }
+      } else {
+        setFormError(json.error || "Erro ao fazer upload")
+      }
+    } catch {
+      setFormError("Erro de conexão ao fazer upload")
+    }
+    setter(false)
+  }
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -2369,6 +2399,8 @@ function AnnouncementsAdmin() {
       cover_url: newAnnouncement.coverUrl || null,
       link_url: newAnnouncement.linkUrl || null,
       slug: newAnnouncement.slug || null,
+      attachment_url: newAnnouncement.attachmentUrl || null,
+      attachment_name: newAnnouncement.attachmentName || null,
       type: newAnnouncement.type,
       content_type: newAnnouncement.contentType,
       active: newAnnouncement.active,
@@ -2381,6 +2413,8 @@ function AnnouncementsAdmin() {
         coverUrl: "",
         linkUrl: "",
         slug: "",
+        attachmentUrl: "",
+        attachmentName: "",
         type: "info",
         contentType: "blog",
         active: true,
@@ -2466,13 +2500,33 @@ function AnnouncementsAdmin() {
               />
             </div>
             <div>
-              <Label className="mb-1 block text-xs md:text-sm">Imagem de capa (URL)</Label>
-              <Input
-                value={newAnnouncement.coverUrl}
-                onChange={(e) => setNewAnnouncement({ ...newAnnouncement, coverUrl: e.target.value })}
-                placeholder="https://..."
-                className="text-sm"
-              />
+              <Label className="mb-1 block text-xs md:text-sm">Imagem de capa</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={newAnnouncement.coverUrl}
+                  onChange={(e) => setNewAnnouncement({ ...newAnnouncement, coverUrl: e.target.value })}
+                  placeholder="Cole a URL ou envie um arquivo abaixo"
+                  className="text-sm"
+                />
+              </div>
+              <label className="mt-2 flex cursor-pointer items-center gap-2 rounded-md border border-dashed border-border px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground">
+                {uploadingCover ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Download className="h-4 w-4" />
+                )}
+                {uploadingCover ? "Enviando..." : "Enviar imagem de capa (JPG, PNG, WebP)"}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  className="sr-only"
+                  disabled={uploadingCover}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) handleFileUpload(file, "cover")
+                  }}
+                />
+              </label>
               {newAnnouncement.coverUrl && (
                 <img
                   src={newAnnouncement.coverUrl}
@@ -2480,6 +2534,36 @@ function AnnouncementsAdmin() {
                   className="mt-2 h-24 w-full rounded-md border border-border object-cover"
                   onError={(e) => (e.currentTarget.style.display = "none")}
                 />
+              )}
+            </div>
+            <div>
+              <Label className="mb-1 block text-xs md:text-sm">Anexo PDF (opcional)</Label>
+              <label className="flex cursor-pointer items-center gap-2 rounded-md border border-dashed border-border px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground">
+                {uploadingAttachment ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Download className="h-4 w-4" />
+                )}
+                {uploadingAttachment
+                  ? "Enviando..."
+                  : newAnnouncement.attachmentName
+                    ? newAnnouncement.attachmentName
+                    : "Enviar PDF ou documento"}
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  className="sr-only"
+                  disabled={uploadingAttachment}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) handleFileUpload(file, "attachment")
+                  }}
+                />
+              </label>
+              {newAnnouncement.attachmentUrl && (
+                <p className="mt-1 truncate text-[11px] text-primary/80">
+                  Anexo salvo: {newAnnouncement.attachmentName || newAnnouncement.attachmentUrl}
+                </p>
               )}
             </div>
             <div>

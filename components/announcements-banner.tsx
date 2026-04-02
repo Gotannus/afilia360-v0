@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge"
 type Announcement = {
   id: string
   text: string
+  title?: string | null
+  cover_url?: string | null
   type: string
   active: boolean
   created_at: string
@@ -137,7 +139,15 @@ export function AnnouncementsBanner() {
                 <div className={`absolute inset-y-0 left-0 w-0.5 rounded-full ${config.barClass}`} />
                 <div className={`brand-highlight absolute inset-x-0 top-0 h-[2px] opacity-60`} />
                 <div className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md border ${config.badgeClass}`}>
-                  <Icon className="h-3.5 w-3.5" />
+                  {announcement.cover_url ? (
+                    <img
+                      src={announcement.cover_url}
+                      alt={announcement.title || ""}
+                      className="h-full w-full rounded-md object-cover"
+                    />
+                  ) : (
+                    <Icon className="h-3.5 w-3.5" />
+                  )}
                 </div>
                 <div className="min-w-0 flex-1">
                   <Badge
@@ -146,6 +156,9 @@ export function AnnouncementsBanner() {
                   >
                     {config.label}
                   </Badge>
+                  {announcement.title && (
+                    <p className="mb-0.5 text-xs font-medium text-foreground">{announcement.title}</p>
+                  )}
                   <p className="text-xs leading-relaxed text-foreground/90">{announcement.text}</p>
                 </div>
               </div>

@@ -12,6 +12,8 @@ export type NoticePost = {
   coverImage: string | null
   externalUrl: string | null
   htmlContent: string | null
+  attachmentUrl: string | null
+  attachmentName: string | null
   materials: Array<{ label: string; url: string; type: "html" | "pdf" | "link"; html?: string | null }>
 }
 
@@ -86,6 +88,8 @@ function mapNoticePost(row: any): NoticePost {
     coverImage: row.cover_url || row.image_url || null,
     externalUrl: row.link_url || row.cta_url || row.lesson_url || row.video_url || row.live_url || null,
     htmlContent,
+    attachmentUrl: row.attachment_url || null,
+    attachmentName: row.attachment_name || null,
     materials,
   }
 }
