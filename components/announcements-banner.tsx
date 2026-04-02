@@ -87,7 +87,7 @@ export function AnnouncementsBanner() {
   if (!mounted || announcements.length === 0 || dismissed) return null
 
   return (
-    <div className="brand-surface border-b border-border/60">
+    <div className="premium-surface rounded-none border-x-0 border-t-0 border-b border-border/60 shadow-[var(--shadow-lux-sm)]">
       <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6">
         {/* Cabeçalho */}
         <div className="mb-3 flex items-center justify-between">
@@ -95,7 +95,7 @@ export function AnnouncementsBanner() {
             <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/15 ring-1 ring-primary/30">
               <Bell className="h-3 w-3 text-primary" />
             </div>
-            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+            <span className="premium-title-section text-xs uppercase text-primary">
               Novidades
             </span>
             <span className="flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
@@ -107,7 +107,7 @@ export function AnnouncementsBanner() {
               href="/avisos"
               className="rounded px-2 py-0.5 text-xs text-primary transition-colors hover:text-primary/80"
             >
-              Ver blog de avisos
+              Ver canal de novidades
             </Link>
             <button
               onClick={handleDismiss}
@@ -126,7 +126,10 @@ export function AnnouncementsBanner() {
             const config = typeConfig[announcement.type]
             const Icon = config.icon
             return (
-              <div key={announcement.id} className={`relative flex items-start gap-3 overflow-hidden rounded-lg border border-border bg-background/50 px-4 py-3 shadow-sm ${config.glowClass}`}>
+              <div
+                key={announcement.id}
+                className={`relative flex items-start gap-3 overflow-hidden rounded-[var(--radius-premium)] border border-border bg-[image:var(--gradient-surface-premium)] px-4 py-3 shadow-[var(--shadow-lux-sm)] ${config.glowClass}`}
+              >
                 <div className={`absolute inset-y-0 left-0 w-0.5 rounded-full ${config.barClass}`} />
                 <div className={`brand-highlight absolute inset-x-0 top-0 h-[2px] opacity-60`} />
                 <div className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md border ${config.badgeClass}`}>
