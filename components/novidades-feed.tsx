@@ -53,6 +53,7 @@ export function NovidadesFeed({ posts }: { posts: NoticePost[] }) {
   const [open, setOpen] = useState(false)
   const [activePost, setActivePost] = useState<NoticePost | null>(null)
   const [activeMaterialUrl, setActiveMaterialUrl] = useState<string | null>(null)
+  const [activeMaterialHtml, setActiveMaterialHtml] = useState<string | null>(null)
   const [typeFilter, setTypeFilter] = useState<NoticePost["contentType"] | "all">("all")
   const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc")
   const filteredAndSortedPosts = useMemo(() => {
@@ -80,6 +81,7 @@ export function NovidadesFeed({ posts }: { posts: NoticePost[] }) {
   const openImmersiveModal = (post: NoticePost) => {
     setActivePost(post)
     setActiveMaterialUrl(null)
+    setActiveMaterialHtml(null)
     setOpen(true)
   }
 
@@ -225,18 +227,27 @@ export function NovidadesFeed({ posts }: { posts: NoticePost[] }) {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="h-[98vh] w-[99vw] max-w-none border-border/70 bg-background/95 p-2 sm:h-[95vh] sm:w-[97vw] sm:p-4" showCloseButton>
           <DialogTitle className="sr-only">{activePost?.title || "Conteúdo"}</DialogTitle>
-          {!activePost?.externalUrl ? (
+          {!activePost?.externalUrl && !activePost?.htmlContent ? (
             <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
               Esse conteúdo não possui link para reprodução.
             </div>
           ) : (
             <div className="grid h-full min-h-0 grid-rows-[minmax(0,1fr)_auto] gap-3">
-              <iframe
-                src={toEmbedUrl(activePost.externalUrl)}
-                title={activePost.title}
-                className="h-full w-full rounded-[var(--radius-premium)] border border-border bg-black"
-                allow="autoplay; fullscreen; picture-in-picture"
-              />
+              {activePost.externalUrl ? (
+                <iframe
+                  src={toEmbedUrl(activePost.externalUrl)}
+                  title={activePost.title}
+                  className="h-full w-full rounded-[var(--radius-premium)] border border-border bg-black"
+                  allow="autoplay; fullscreen; picture-in-picture"
+                />
+              ) : (
+                <iframe
+                  srcDoc={activePost.htmlContent || ""}
+                  title={activePost.title}
+                  className="h-full w-full rounded-[var(--radius-premium)] border border-border bg-white"
+                  sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+                />
+              )}
 
               <div className="rounded-[var(--radius-premium)] border border-border/70 bg-black/10 p-3">
                 <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
@@ -254,9 +265,15 @@ export function NovidadesFeed({ posts }: { posts: NoticePost[] }) {
                           variant="outline"
                           className="h-8 rounded-full px-3 text-xs"
                           onClick={() => {
-                            if (material.type === "html" || material.type === "pdf") {
+                            if (material.type === "html" && material.html) {
+                              setActiveMaterialHtml(material.html)
+                              setActiveMaterialUrl(null)
+                            } else if (material.type === "html" || material.type === "pdf") {
+                              setActiveMaterialHtml(null)
                               setActiveMaterialUrl(material.url)
                             } else {
+                              setActiveMaterialHtml(null)
+                              setActiveMaterialUrl(null)
                               window.open(material.url, "_blank", "noreferrer")
                             }
                           }}
@@ -265,6 +282,14 @@ export function NovidadesFeed({ posts }: { posts: NoticePost[] }) {
                         </Button>
                       ))}
                     </div>
+                    {activeMaterialHtml && (
+                      <iframe
+                        srcDoc={activeMaterialHtml}
+                        title="Material HTML"
+                        className="h-52 w-full rounded-[var(--radius-premium)] border border-border bg-white"
+                        sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+                      />
+                    )}
                     {activeMaterialUrl && (
                       <iframe
                         src={activeMaterialUrl}

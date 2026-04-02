@@ -105,10 +105,6 @@ export default function AdminPage() {
                     <Megaphone className="h-4 w-4 shrink-0" />
                     <span className="text-xs sm:text-sm">Novidades</span>
                   </TabsTrigger>
-                  <TabsTrigger value="novidades" className="flex items-center gap-2 whitespace-nowrap px-3 py-2">
-                    <Newspaper className="h-4 w-4 shrink-0" />
-                    <span className="text-xs sm:text-sm">Novidades</span>
-                  </TabsTrigger>
                   <TabsTrigger value="dashboard" className="flex items-center gap-2 whitespace-nowrap px-3 py-2">
                     <TrendingUp className="h-4 w-4 shrink-0" />
                     <span className="text-xs sm:text-sm">Dashboard</span>
@@ -2327,6 +2323,7 @@ function AnnouncementsAdmin() {
     message: "",
     excerpt: "",
     content: "",
+    htmlContent: "",
     coverUrl: "",
     linkUrl: "",
     materialsJson: "",
@@ -2390,6 +2387,7 @@ function AnnouncementsAdmin() {
       text: textFallback,
       excerpt: newAnnouncement.excerpt || null,
       content: newAnnouncement.content || null,
+      html_content: newAnnouncement.htmlContent || null,
       cover_url: newAnnouncement.coverUrl || null,
       link_url: newAnnouncement.linkUrl || null,
       materials: materials.length > 0 ? materials : null,
@@ -2405,6 +2403,7 @@ function AnnouncementsAdmin() {
         message: "",
         excerpt: "",
         content: "",
+        htmlContent: "",
         coverUrl: "",
         linkUrl: "",
         materialsJson: "",
@@ -2617,6 +2616,27 @@ function AnnouncementsAdmin() {
                 ))}
               </div>
             </div>
+            <div>
+              <Label className="mb-2 block text-xs md:text-sm">Tipo de conteúdo do canal</Label>
+              <div className="flex gap-2 flex-wrap">
+                {(["blog", "lesson", "live", "creatives"] as const).map((contentType) => (
+                  <Button
+                    key={contentType}
+                    size="sm"
+                    variant={newAnnouncement.contentType === contentType ? "default" : "outline"}
+                    onClick={() => setNewAnnouncement({ ...newAnnouncement, contentType })}
+                  >
+                    {contentType === "blog"
+                      ? "Post blog"
+                      : contentType === "lesson"
+                        ? "Aula nova"
+                        : contentType === "live"
+                          ? "Live"
+                          : "Criativos"}
+                  </Button>
+                ))}
+              </div>
+            </div>
           </div>
           <div className="mt-4">
             <Label className="mb-1 block text-xs md:text-sm">Conteúdo completo do artigo</Label>
@@ -2626,6 +2646,18 @@ function AnnouncementsAdmin() {
               placeholder="Escreva aqui o conteúdo do artigo..."
               className="min-h-[180px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             />
+          </div>
+          <div className="mt-4">
+            <Label className="mb-1 block text-xs md:text-sm">HTML da aula/live (opcional)</Label>
+            <textarea
+              value={newAnnouncement.htmlContent}
+              onChange={(e) => setNewAnnouncement({ ...newAnnouncement, htmlContent: e.target.value })}
+              placeholder="Cole aqui o HTML completo da aula interativa (claude, quiz, etc)."
+              className="min-h-[180px] w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-xs"
+            />
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              Se preencher HTML, a novidade pode abrir sem link externo usando iframe com srcDoc.
+            </p>
           </div>
           <div className="mt-4">
             <Label className="mb-1 block text-xs md:text-sm">Materiais (JSON opcional)</Label>

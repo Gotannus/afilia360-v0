@@ -11,7 +11,8 @@ export type NoticePost = {
   publishedAt: string
   coverImage: string | null
   externalUrl: string | null
-  materials: Array<{ label: string; url: string; type: "html" | "pdf" | "link" }>
+  htmlContent: string | null
+  materials: Array<{ label: string; url: string; type: "html" | "pdf" | "link"; html?: string | null }>
 }
 
 function slugify(value: string) {
@@ -62,8 +63,16 @@ function mapNoticePost(row: any): NoticePost {
       label: material?.label || material?.title || "Material complementar",
       url: material?.url || material?.href || "",
       type: inferMaterialType(material?.url || material?.href || "", material?.type),
+      html: typeof material?.html === "string" ? material.html : null,
     }))
-    .filter((material: { label: string; url: string; type: "html" | "pdf" | "link" }) => Boolean(material.url))
+    .filter((material: { label: string; url: string; type: "html" | "pdf" | "link"; html?: string | null }) => Boolean(material.url) || Boolean(material.html))
+  const rawHtmlContent = row.html_content || row.html || null
+  const htmlContent =
+    typeof rawHtmlContent === "string" && rawHtmlContent.trim()
+      ? rawHtmlContent
+      : typeof content === "string" && /<html|<body|<div|<section|<!doctype/i.test(content)
+        ? content
+        : null
 
   return {
     id: String(row.id),
@@ -76,6 +85,7 @@ function mapNoticePost(row: any): NoticePost {
     publishedAt,
     coverImage: row.cover_url || row.image_url || null,
     externalUrl: row.link_url || row.cta_url || row.lesson_url || row.video_url || row.live_url || null,
+    htmlContent,
     materials,
   }
 }
