@@ -6,11 +6,11 @@ import { fetchNoticePostBySlug } from "@/lib/announcements-blog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 
-const typeLabel: Record<string, string> = {
-  info: "Informação",
-  promo: "Promoção",
-  update: "Novidade",
-  alert: "Alerta",
+const contentTypeLabel = {
+  blog: "Post blog",
+  lesson: "Aula nova",
+  live: "Live",
+  creatives: "Criativos validados",
 }
 
 export default async function AvisoDetalhePage({ params }: { params: Promise<{ slug: string }> }) {
@@ -26,24 +26,24 @@ export default async function AvisoDetalhePage({ params }: { params: Promise<{ s
       <Link href="/avisos">
         <Button variant="ghost" className="mb-4 gap-1 px-2">
           <ChevronLeft className="h-4 w-4" />
-          Voltar para avisos
+          Voltar para novidades
         </Button>
       </Link>
 
-      <article className="brand-surface rounded-2xl p-6 sm:p-8">
+      <article className="premium-surface p-6 sm:p-8">
         <div className="brand-highlight mb-4 h-1 w-24 rounded-full" />
         <div className="mb-4 flex flex-wrap items-center gap-2">
-          <Badge variant="outline">{typeLabel[post.category] || "Aviso"}</Badge>
+          <Badge variant="outline">{contentTypeLabel[post.contentType] || "Conteúdo"}</Badge>
           <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
             <CalendarDays className="h-3.5 w-3.5" />
             {new Date(post.publishedAt).toLocaleDateString("pt-BR")}
           </span>
         </div>
 
-        <h1 className="text-3xl font-bold tracking-tight">{post.title}</h1>
+        <h1 className="premium-title-hero">{post.title}</h1>
 
         {post.coverImage && (
-          <div className="relative mt-6 h-64 w-full overflow-hidden rounded-xl border border-border sm:h-80">
+          <div className="relative mt-6 h-64 w-full overflow-hidden rounded-[var(--radius-premium)] border border-border sm:h-80">
             <Image src={post.coverImage || "/placeholder.jpg"} alt={post.title} fill className="object-cover" />
           </div>
         )}
