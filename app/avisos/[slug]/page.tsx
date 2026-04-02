@@ -1,10 +1,4 @@
-import Image from "next/image"
-import Link from "next/link"
-import { notFound } from "next/navigation"
-import { CalendarDays, ChevronLeft, ExternalLink } from "lucide-react"
-import { fetchNoticePostBySlug } from "@/lib/announcements-blog"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { redirect } from "next/navigation"
 
 const contentTypeLabel = {
   blog: "Post blog",

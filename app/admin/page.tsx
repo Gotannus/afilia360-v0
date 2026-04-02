@@ -17,6 +17,7 @@ import type { Product } from "@/lib/products-data"
 import type { Affiliate } from "@/lib/types"
 import { CoursesAdmin } from "@/components/admin/courses-admin"
 import { UserOrderbumps } from "@/components/admin/user-orderbumps"
+import { NovidadesAdmin } from "@/components/admin/novidades-admin"
 import {
   Plus,
   Edit2,
@@ -55,6 +56,7 @@ import {
   GripVertical,
   ArrowLeft,
   Download,
+  Newspaper,
 } from "lucide-react"
 import type React from "react" // Import React for JSXElement[]
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card" // Import Card components
@@ -103,6 +105,10 @@ export default function AdminPage() {
                     <Megaphone className="h-4 w-4 shrink-0" />
                     <span className="text-xs sm:text-sm">Avisos</span>
                   </TabsTrigger>
+                  <TabsTrigger value="novidades" className="flex items-center gap-2 whitespace-nowrap px-3 py-2">
+                    <Newspaper className="h-4 w-4 shrink-0" />
+                    <span className="text-xs sm:text-sm">Novidades</span>
+                  </TabsTrigger>
                   <TabsTrigger value="dashboard" className="flex items-center gap-2 whitespace-nowrap px-3 py-2">
                     <TrendingUp className="h-4 w-4 shrink-0" />
                     <span className="text-xs sm:text-sm">Dashboard</span>
@@ -129,6 +135,10 @@ export default function AdminPage() {
 
             <TabsContent value="announcements">
               <AnnouncementsAdmin />
+            </TabsContent>
+
+            <TabsContent value="novidades">
+              <NovidadesAdmin />
             </TabsContent>
 
             <TabsContent value="dashboard">
@@ -2288,9 +2298,30 @@ function RankingAdmin() {
 }
 
 function AnnouncementsAdmin() {
+  type PublicationStatus = "draft" | "published"
+
+  const formatDateTimeLocal = (value: Date) => {
+    const offset = value.getTimezoneOffset()
+    const localDate = new Date(value.getTime() - offset * 60 * 1000)
+    return localDate.toISOString().slice(0, 16)
+  }
+
+  const slugifyAnnouncement = (value: string) =>
+    value
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)+/g, "")
+
   const [announcements, setAnnouncements] = useState<any[]>([])
   const [isAdding, setIsAdding] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
+  const [formError, setFormError] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [savedPostSlug, setSavedPostSlug] = useState<string | null>(null)
+  const [savedPublicationStatus, setSavedPublicationStatus] = useState<PublicationStatus | null>(null)
   const [newAnnouncement, setNewAnnouncement] = useState({
     title: "",
     message: "",
@@ -2313,6 +2344,15 @@ function AnnouncementsAdmin() {
   useEffect(() => {
     fetchAnnouncements()
   }, [])
+
+  useEffect(() => {
+    if (slugManuallyEdited) return
+
+    setNewAnnouncement((prev) => ({
+      ...prev,
+      slug: slugifyAnnouncement(prev.title),
+    }))
+  }, [newAnnouncement.title, slugManuallyEdited])
 
   const fetchAnnouncements = async () => {
     setLoading(true)
@@ -2375,7 +2415,11 @@ function AnnouncementsAdmin() {
       })
       setIsAdding(false)
       fetchAnnouncements()
+    } else {
+      setFormError(error.message)
     }
+
+    setSaving(false)
   }
 
   const handleToggleActive = async (id: string, currentActive: boolean) => {
@@ -2411,6 +2455,20 @@ function AnnouncementsAdmin() {
           Nova Novidade
         </Button>
       </div>
+
+      {savedPostSlug && savedPublicationStatus === "published" && (
+        <div className="mb-4 rounded-lg border border-emerald-500/40 bg-emerald-500/10 p-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-emerald-200">Post salvo com sucesso.</p>
+            <Link href={`/avisos/${savedPostSlug}`} target="_blank" rel="noreferrer">
+              <Button size="sm" variant="outline" className="gap-2 bg-transparent">
+                <Eye className="h-4 w-4" />
+                Visualizar no blog
+              </Button>
+            </Link>
+          </div>
+        </div>
+      )}
 
       {isAdding && (
         <div className="mb-6 rounded-xl border border-primary/30 bg-card p-6">
@@ -2486,18 +2544,33 @@ function AnnouncementsAdmin() {
                           : type === "promo"
                             ? "bg-green-600"
                             : type === "update"
-                              ? "bg-amber-600"
+                              ? "bg-yellow-600"
                               : "bg-red-600"
                         : ""
                     }
                   >
-                    {type === "info"
-                      ? "Informação"
-                      : type === "promo"
-                        ? "Promoção"
-                        : type === "update"
-                          ? "Atualização"
-                          : "Alerta"}
+                    {type === "info" ? "Info" : type === "promo" ? "Promoção" : type === "update" ? "Atualização" : "Alerta"}
+                  </Button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <Label className="mb-2 block text-xs md:text-sm">Tipo de conteúdo do canal</Label>
+              <div className="flex gap-2 flex-wrap">
+                {(["blog", "lesson", "live", "creatives"] as const).map((contentType) => (
+                  <Button
+                    key={contentType}
+                    size="sm"
+                    variant={newAnnouncement.contentType === contentType ? "default" : "outline"}
+                    onClick={() => setNewAnnouncement({ ...newAnnouncement, contentType })}
+                  >
+                    {contentType === "blog"
+                      ? "Post blog"
+                      : contentType === "lesson"
+                        ? "Aula nova"
+                        : contentType === "live"
+                          ? "Live"
+                          : "Criativos"}
                   </Button>
                 ))}
               </div>
