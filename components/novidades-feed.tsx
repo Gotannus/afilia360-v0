@@ -245,7 +245,7 @@ export function NovidadesFeed({ posts }: { posts: NoticePost[] }) {
                   srcDoc={activePost.htmlContent || ""}
                   title={activePost.title}
                   className="h-full w-full rounded-[var(--radius-premium)] border border-border bg-white"
-                  sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+                  sandbox="allow-scripts allow-popups allow-forms"
                 />
               )}
 
@@ -287,7 +287,7 @@ export function NovidadesFeed({ posts }: { posts: NoticePost[] }) {
                         srcDoc={activeMaterialHtml}
                         title="Material HTML"
                         className="h-52 w-full rounded-[var(--radius-premium)] border border-border bg-white"
-                        sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+                        sandbox="allow-scripts allow-popups allow-forms"
                       />
                     )}
                     {activeMaterialUrl && (
