@@ -2582,7 +2582,7 @@ function AnnouncementsAdmin() {
                 <p className="mt-2 whitespace-pre-line text-sm text-muted-foreground">
                   {newAnnouncement.content || "Conteúdo completo aparecerá aqui em tempo real."}
                 </p>
-                <p className="mt-3 text-[11px] text-muted-foreground">URL final: /avisos/{newAnnouncement.slug || "slug-do-post"}</p>
+                <p className="mt-3 text-[11px] text-muted-foreground">{"URL final: /avisos/"}{newAnnouncement.slug || "slug-do-post"}</p>
               </div>
             </div>
           </div>
