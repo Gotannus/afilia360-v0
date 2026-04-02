@@ -14,9 +14,9 @@ export function NovidadesPageClient({ initialPosts }: { initialPosts: NoticePost
   const filteredPosts = useMemo(() => {
     if (!normalizedQuery) return initialPosts
     return initialPosts.filter((post) => {
-      const title = post.title.toLowerCase()
-      const excerpt = post.excerpt.toLowerCase()
-      const content = post.content.toLowerCase()
+      const title = String(post.title || "").toLowerCase()
+      const excerpt = String(post.excerpt || "").toLowerCase()
+      const content = String(post.content || "").toLowerCase()
       return title.includes(normalizedQuery) || excerpt.includes(normalizedQuery) || content.includes(normalizedQuery)
     })
   }, [initialPosts, normalizedQuery])

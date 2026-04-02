@@ -172,7 +172,7 @@ export function Header({ searchQuery, onSearchChange }: HeaderProps) {
                 </div>
                 <div className="max-h-72 overflow-y-auto py-1">
                   {announcements.map((a) => {
-                    const cfg = typeConfig[a.type]
+                    const cfg = typeConfig[a.type as keyof typeof typeConfig] ?? typeConfig.info
                     const Icon = cfg.icon
                     return (
                       <div key={a.id} className="relative flex items-start gap-3 px-4 py-3 hover:bg-muted/50 transition-colors">

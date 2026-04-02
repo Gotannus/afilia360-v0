@@ -14,7 +14,7 @@ const supabase = createBrowserClient(
 type Announcement = {
   id: string
   text: string
-  type: "info" | "promo" | "update" | "alert"
+  type: string
   active: boolean
   created_at: string
 }
@@ -123,7 +123,7 @@ export function AnnouncementsBanner() {
         {/* Grid de avisos */}
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {announcements.map((announcement) => {
-            const config = typeConfig[announcement.type]
+            const config = typeConfig[announcement.type as keyof typeof typeConfig] ?? typeConfig.info
             const Icon = config.icon
             return (
               <div
