@@ -2721,6 +2721,27 @@ function AnnouncementsAdmin() {
                 ))}
               </div>
             </div>
+            <div>
+              <Label className="mb-2 block text-xs md:text-sm">Tipo de conteúdo do canal</Label>
+              <div className="flex gap-2 flex-wrap">
+                {(["blog", "lesson", "live", "creatives"] as const).map((contentType) => (
+                  <Button
+                    key={contentType}
+                    size="sm"
+                    variant={newAnnouncement.contentType === contentType ? "default" : "outline"}
+                    onClick={() => setNewAnnouncement({ ...newAnnouncement, contentType })}
+                  >
+                    {contentType === "blog"
+                      ? "Post blog"
+                      : contentType === "lesson"
+                        ? "Aula nova"
+                        : contentType === "live"
+                          ? "Live"
+                          : "Criativos"}
+                  </Button>
+                ))}
+              </div>
+            </div>
           </div>
           <div className="mt-4">
             <Label className="mb-1 block text-xs md:text-sm">Conteúdo completo do artigo</Label>

@@ -91,7 +91,7 @@ export function Header({ searchQuery, onSearchChange }: HeaderProps) {
                     Ranking
                   </Link>
                   <Link href="/novidades" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors" onClick={() => setMobileMenuOpen(false)}>
-                    <Newspaper className="h-4 w-4" />
+                    <Megaphone className="h-4 w-4" />
                     Novidades
                   </Link>
                   <a href="#" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors">
