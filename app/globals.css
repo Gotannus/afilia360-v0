@@ -183,6 +183,42 @@
 }
 
 @layer utilities {
+  .premium-surface {
+    background: var(--gradient-surface-premium);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-premium);
+    box-shadow: var(--shadow-lux-md);
+    backdrop-filter: blur(14px);
+  }
+
+  .premium-hero {
+    background: var(--gradient-hero-premium);
+    border-radius: calc(var(--radius-premium) + 0.25rem);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: var(--shadow-lux-lg);
+  }
+
+  .premium-title-hero {
+    font-size: var(--title-content-hero);
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+  }
+
+  .premium-title-section {
+    font-size: var(--title-content-section);
+    line-height: 1.16;
+    letter-spacing: -0.015em;
+    font-weight: 650;
+  }
+
+  .premium-title-card {
+    font-size: var(--title-content-card);
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    font-weight: 600;
+  }
+
   .brand-surface {
     background: linear-gradient(140deg, rgba(24, 24, 27, 0.86), rgba(15, 23, 42, 0.82));
     border: 1px solid rgba(255, 255, 255, 0.08);
