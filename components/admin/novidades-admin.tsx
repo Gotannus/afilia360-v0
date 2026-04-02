@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,13 +13,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import {
   Plus, Pencil, Trash2, Radio, BookOpen, Megaphone, Palette,
-  Save, Eye, EyeOff, FileText, Globe, Link2, Upload, X, CheckCircle
+  Save, Eye, EyeOff, FileText, Globe, Link2, Upload, X, CheckCircle,
+  Maximize2, SplitSquareHorizontal, Code2, PlayCircle
 } from "lucide-react"
 import {
   getAllNewsPostsAdmin, upsertNewsPost, deleteNewsPost,
   getLives, upsertLive, deleteLive,
 } from "@/lib/novidades-api"
 import type { NewsPost } from "@/components/news-card"
+import { isFullHtml } from "@/components/news-card"
 import type { Live, LiveMaterial } from "@/components/live-card"
 
 const categoryOptions = [
@@ -50,6 +52,177 @@ function emptyPost(): Partial<NewsPost> {
 }
 function emptyLive(): Partial<Live> {
   return { title: "", description: "", cover_image: "", stream_url: "", status: "upcoming", scheduled_at: "", materials: [] }
+}
+
+// ── HTML Preview Fullscreen ──────────────────────────────────────────────────
+
+function HtmlPreviewFullscreen({ content, title, onClose }: { content: string; title: string; onClose: () => void }) {
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) { if (e.key === "Escape") onClose() }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [onClose])
+
+  return (
+    <div className="fixed inset-0 z-[200] flex flex-col bg-black" role="dialog" aria-modal="true">
+      <div className="flex shrink-0 items-center justify-between border-b border-white/10 bg-black/80 px-4 py-2.5">
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="border-violet-500/40 bg-violet-500/15 px-2 py-0.5 text-[10px] text-violet-400">
+            Preview
+          </Badge>
+          <span className="text-sm text-white/60">{title || "Sem título"}</span>
+        </div>
+        <button
+          onClick={onClose}
+          className="flex h-8 w-8 items-center justify-center rounded-md text-white/50 hover:bg-white/10 hover:text-white"
+          aria-label="Fechar preview"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+      <iframe
+        srcDoc={content}
+        title="Preview fullscreen"
+        className="h-full w-full flex-1 border-0"
+        sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+      />
+    </div>
+  )
+}
+
+// ── Content Editor com split-view ────────────────────────────────────────────
+
+function ContentEditor({
+  value,
+  onChange,
+  title,
+}: {
+  value: string
+  onChange: (v: string) => void
+  title: string
+}) {
+  const [mode, setMode] = useState<"code" | "split" | "preview">("code")
+  const [fullscreenPreview, setFullscreenPreview] = useState(false)
+  const isHtml = isFullHtml(value)
+
+  return (
+    <div className="col-span-2 space-y-2">
+      <div className="flex items-center justify-between">
+        <Label className="text-xs text-muted-foreground">
+          Conteúdo
+          {isHtml && (
+            <Badge variant="outline" className="ml-2 border-violet-500/30 bg-violet-500/10 px-1.5 py-0 text-[10px] text-violet-400">
+              HTML completo detectado
+            </Badge>
+          )}
+        </Label>
+        <div className="flex items-center gap-1">
+          {/* Botões de modo */}
+          <button
+            type="button"
+            onClick={() => setMode("code")}
+            className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs transition-colors ${
+              mode === "code" ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Code2 className="h-3 w-3" />
+            Código
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode("split")}
+            className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs transition-colors ${
+              mode === "split" ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <SplitSquareHorizontal className="h-3 w-3" />
+            Split
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode("preview")}
+            className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs transition-colors ${
+              mode === "preview" ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Eye className="h-3 w-3" />
+            Preview
+          </button>
+          {value && (
+            <button
+              type="button"
+              onClick={() => setFullscreenPreview(true)}
+              className="ml-1 flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+              title="Preview fullscreen"
+            >
+              <Maximize2 className="h-3 w-3" />
+              Fullscreen
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Editor area */}
+      <div
+        className={`overflow-hidden rounded-lg border border-border ${
+          mode === "split" ? "grid grid-cols-2 divide-x divide-border" : ""
+        }`}
+      >
+        {/* Code panel */}
+        {(mode === "code" || mode === "split") && (
+          <Textarea
+            rows={mode === "split" ? 16 : 12}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={`<p>Conteúdo do post em HTML...</p>\n\nOu cole um documento HTML completo:\n<!DOCTYPE html>\n<html lang="pt-BR">...`}
+            className="resize-none rounded-none border-0 font-mono text-xs focus-visible:ring-0 focus-visible:ring-offset-0"
+          />
+        )}
+
+        {/* Preview panel */}
+        {(mode === "preview" || mode === "split") && (
+          <div className={`${mode === "preview" ? "h-64 sm:h-80" : "h-64"} overflow-hidden bg-white`}>
+            {value ? (
+              isHtml ? (
+                <iframe
+                  srcDoc={value}
+                  title="Preview"
+                  className="h-full w-full border-0"
+                  sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+                />
+              ) : (
+                <div
+                  className="h-full overflow-y-auto bg-white p-4 text-sm text-zinc-900"
+                  dangerouslySetInnerHTML={{ __html: value }}
+                />
+              )
+            ) : (
+              <div className="flex h-full items-center justify-center text-sm text-zinc-400">
+                Prévia aparece aqui
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Dica de HTML */}
+      {!isHtml && (
+        <p className="text-[11px] text-muted-foreground/60">
+          Para criar uma aula com estilo Netflix (HTML completo), inicie com{" "}
+          <code className="rounded bg-secondary px-1 py-0.5 text-[10px]">{"<!DOCTYPE html>"}</code> ou{" "}
+          <code className="rounded bg-secondary px-1 py-0.5 text-[10px]">{"<html"}</code>
+        </p>
+      )}
+
+      {fullscreenPreview && (
+        <HtmlPreviewFullscreen
+          content={value}
+          title={title}
+          onClose={() => setFullscreenPreview(false)}
+        />
+      )}
+    </div>
+  )
 }
 
 // ── News Posts Admin ─────────────────────────────────────────────────────────
@@ -116,20 +289,25 @@ function NewsPostsAdmin() {
             {post.cover_image && (
               <img src={post.cover_image} alt="" className="h-12 w-16 shrink-0 rounded object-cover" />
             )}
-            <div className="flex-1 min-w-0">
-              <div className="flex flex-wrap items-center gap-2 mb-1">
-                <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${categoryBadge[post.category]}`}>
+            <div className="min-w-0 flex-1">
+              <div className="mb-1 flex flex-wrap items-center gap-2">
+                <Badge variant="outline" className={`px-1.5 py-0 text-[10px] ${categoryBadge[post.category]}`}>
                   {categoryOptions.find(c => c.value === post.category)?.label}
                 </Badge>
                 {post.published
-                  ? <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-emerald-500/30 bg-emerald-500/10 text-emerald-400"><Eye className="h-2.5 w-2.5 mr-1" />Publicado</Badge>
-                  : <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-zinc-500/30 bg-zinc-500/10 text-zinc-400"><EyeOff className="h-2.5 w-2.5 mr-1" />Rascunho</Badge>
+                  ? <Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0 text-[10px] text-emerald-400"><Eye className="mr-1 h-2.5 w-2.5" />Publicado</Badge>
+                  : <Badge variant="outline" className="border-zinc-500/30 bg-zinc-500/10 px-1.5 py-0 text-[10px] text-zinc-400"><EyeOff className="mr-1 h-2.5 w-2.5" />Rascunho</Badge>
                 }
+                {isFullHtml(post.content) && (
+                  <Badge variant="outline" className="border-violet-500/30 bg-violet-500/10 px-1.5 py-0 text-[10px] text-violet-400">
+                    <PlayCircle className="mr-1 h-2.5 w-2.5" />HTML
+                  </Badge>
+                )}
               </div>
-              <p className="text-sm font-medium text-foreground truncate">{post.title}</p>
-              {post.description && <p className="text-xs text-muted-foreground truncate">{post.description}</p>}
+              <p className="truncate text-sm font-medium text-foreground">{post.title}</p>
+              {post.description && <p className="truncate text-xs text-muted-foreground">{post.description}</p>}
             </div>
-            <div className="flex gap-2 shrink-0">
+            <div className="flex shrink-0 gap-2">
               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditing(post)}>
                 <Pencil className="h-3.5 w-3.5" />
               </Button>
@@ -146,9 +324,9 @@ function NewsPostsAdmin() {
         )}
       </div>
 
-      {/* Edit Dialog */}
+      {/* Edit Dialog — largura máxima extendida para split view */}
       <Dialog open={!!editing} onOpenChange={(open) => !open && setEditing(null)}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-h-[92vh] max-w-4xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editing?.id ? "Editar Post" : "Novo Post"}</DialogTitle>
           </DialogHeader>
@@ -157,11 +335,18 @@ function NewsPostsAdmin() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
                   <Label className="mb-1.5 block text-xs text-muted-foreground">Título *</Label>
-                  <Input value={editing.title ?? ""} onChange={(e) => setEditing({ ...editing, title: e.target.value })} placeholder="Título do post" />
+                  <Input
+                    value={editing.title ?? ""}
+                    onChange={(e) => setEditing({ ...editing, title: e.target.value })}
+                    placeholder="Título do post"
+                  />
                 </div>
                 <div>
                   <Label className="mb-1.5 block text-xs text-muted-foreground">Categoria</Label>
-                  <Select value={editing.category} onValueChange={(v) => setEditing({ ...editing, category: v as NewsPost["category"] })}>
+                  <Select
+                    value={editing.category}
+                    onValueChange={(v) => setEditing({ ...editing, category: v as NewsPost["category"] })}
+                  >
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {categoryOptions.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
@@ -173,16 +358,28 @@ function NewsPostsAdmin() {
                     <p className="text-sm font-medium">Publicado</p>
                     <p className="text-xs text-muted-foreground">Visível para afiliados</p>
                   </div>
-                  <Switch checked={editing.published ?? false} onCheckedChange={(v) => setEditing({ ...editing, published: v })} />
+                  <Switch
+                    checked={editing.published ?? false}
+                    onCheckedChange={(v) => setEditing({ ...editing, published: v })}
+                  />
                 </div>
                 <div className="col-span-2">
                   <Label className="mb-1.5 block text-xs text-muted-foreground">Descrição</Label>
-                  <Textarea rows={2} value={editing.description ?? ""} onChange={(e) => setEditing({ ...editing, description: e.target.value })} placeholder="Resumo breve do post" />
+                  <Textarea
+                    rows={2}
+                    value={editing.description ?? ""}
+                    onChange={(e) => setEditing({ ...editing, description: e.target.value })}
+                    placeholder="Resumo breve do post"
+                  />
                 </div>
                 <div className="col-span-2">
                   <Label className="mb-1.5 block text-xs text-muted-foreground">Imagem de Capa</Label>
                   <div className="flex gap-2">
-                    <Input value={editing.cover_image ?? ""} onChange={(e) => setEditing({ ...editing, cover_image: e.target.value })} placeholder="URL da imagem" />
+                    <Input
+                      value={editing.cover_image ?? ""}
+                      onChange={(e) => setEditing({ ...editing, cover_image: e.target.value })}
+                      placeholder="URL da imagem"
+                    />
                     <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleUpload} />
                     <Button variant="outline" size="icon" onClick={() => fileRef.current?.click()} title="Upload de imagem">
                       <Upload className="h-4 w-4" />
@@ -200,16 +397,13 @@ function NewsPostsAdmin() {
                     placeholder="ex: tráfego pago, copywriting, leads"
                   />
                 </div>
-                <div className="col-span-2">
-                  <Label className="mb-1.5 block text-xs text-muted-foreground">Conteúdo (HTML)</Label>
-                  <Textarea
-                    rows={8}
-                    value={editing.content ?? ""}
-                    onChange={(e) => setEditing({ ...editing, content: e.target.value })}
-                    placeholder="<p>Conteúdo do post em HTML...</p>"
-                    className="font-mono text-xs"
-                  />
-                </div>
+
+                {/* Editor com split-view e preview */}
+                <ContentEditor
+                  value={editing.content ?? ""}
+                  onChange={(v) => setEditing({ ...editing, content: v })}
+                  title={editing.title ?? ""}
+                />
               </div>
               <div className="flex justify-end gap-3 border-t border-border pt-4">
                 <Button variant="outline" onClick={() => setEditing(null)}>Cancelar</Button>
@@ -309,25 +503,25 @@ function LivesAdmin() {
             {live.cover_image && (
               <img src={live.cover_image} alt="" className="h-12 w-16 shrink-0 rounded object-cover" />
             )}
-            <div className="flex-1 min-w-0">
-              <div className="flex flex-wrap gap-2 mb-1">
-                <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${statusBadge[live.status]}`}>
+            <div className="min-w-0 flex-1">
+              <div className="mb-1 flex flex-wrap gap-2">
+                <Badge variant="outline" className={`px-1.5 py-0 text-[10px] ${statusBadge[live.status]}`}>
                   {statusOptions.find(s => s.value === live.status)?.label}
                 </Badge>
                 {live.materials.length > 0 && (
-                  <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-zinc-500/30 bg-zinc-500/10 text-zinc-400">
+                  <Badge variant="outline" className="border-zinc-500/30 bg-zinc-500/10 px-1.5 py-0 text-[10px] text-zinc-400">
                     {live.materials.length} {live.materials.length === 1 ? "material" : "materiais"}
                   </Badge>
                 )}
               </div>
-              <p className="text-sm font-medium text-foreground truncate">{live.title}</p>
+              <p className="truncate text-sm font-medium text-foreground">{live.title}</p>
               {live.scheduled_at && (
                 <p className="text-xs text-muted-foreground">
                   {new Date(live.scheduled_at).toLocaleString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
                 </p>
               )}
             </div>
-            <div className="flex gap-2 shrink-0">
+            <div className="flex shrink-0 gap-2">
               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditing(live)}>
                 <Pencil className="h-3.5 w-3.5" />
               </Button>
@@ -346,7 +540,7 @@ function LivesAdmin() {
 
       {/* Live Edit Dialog */}
       <Dialog open={!!editing} onOpenChange={(open) => !open && setEditing(null)}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editing?.id ? "Editar Live" : "Nova Live"}</DialogTitle>
           </DialogHeader>
@@ -404,9 +598,9 @@ function LivesAdmin() {
                     return (
                       <div key={mat.id} className="flex items-center gap-3 rounded-lg border border-border bg-secondary/50 px-3 py-2">
                         <MatIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm truncate">{mat.name}</p>
-                          <p className="text-xs text-muted-foreground uppercase">{mat.type}</p>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm">{mat.name}</p>
+                          <p className="text-xs uppercase text-muted-foreground">{mat.type}</p>
                         </div>
                         <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-red-400" onClick={() => removeMaterial(mat.id)}>
                           <X className="h-3.5 w-3.5" />
@@ -417,8 +611,8 @@ function LivesAdmin() {
                 </div>
 
                 {/* Add material */}
-                <div className="rounded-lg border border-dashed border-border p-3 space-y-3">
-                  <p className="text-xs text-muted-foreground font-medium">Adicionar material</p>
+                <div className="space-y-3 rounded-lg border border-dashed border-border p-3">
+                  <p className="text-xs font-medium text-muted-foreground">Adicionar material</p>
                   <div className="grid grid-cols-3 gap-2">
                     <Input
                       className="col-span-2"
@@ -449,7 +643,7 @@ function LivesAdmin() {
                       <Plus className="h-4 w-4" />
                     </Button>
                   </div>
-                  {uploadingMat && <p className="text-xs text-muted-foreground animate-pulse">Enviando arquivo...</p>}
+                  {uploadingMat && <p className="animate-pulse text-xs text-muted-foreground">Enviando arquivo...</p>}
                 </div>
               </div>
 
@@ -475,7 +669,9 @@ export function NovidadesAdmin() {
     <div className="space-y-6">
       <div>
         <h2 className="text-lg font-semibold">Gerenciar Novidades</h2>
-        <p className="text-sm text-muted-foreground">Crie posts, aulas, criativos e gerencie as transmissões ao vivo</p>
+        <p className="text-sm text-muted-foreground">
+          Crie posts, aulas em HTML, criativos validados e gerencie transmissões ao vivo
+        </p>
       </div>
       <Tabs defaultValue="posts">
         <TabsList className="mb-4">
