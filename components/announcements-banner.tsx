@@ -104,7 +104,7 @@ export function AnnouncementsBanner() {
           </div>
           <div className="flex items-center gap-2">
             <Link
-              href="/avisos"
+              href="/novidades"
               className="rounded px-2 py-0.5 text-xs text-primary transition-colors hover:text-primary/80"
             >
               Ver canal de novidades

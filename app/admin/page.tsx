@@ -103,7 +103,7 @@ export default function AdminPage() {
                   </TabsTrigger>
                   <TabsTrigger value="announcements" className="flex items-center gap-2 whitespace-nowrap px-3 py-2">
                     <Megaphone className="h-4 w-4 shrink-0" />
-                    <span className="text-xs sm:text-sm">Avisos</span>
+                    <span className="text-xs sm:text-sm">Novidades</span>
                   </TabsTrigger>
                   <TabsTrigger value="novidades" className="flex items-center gap-2 whitespace-nowrap px-3 py-2">
                     <Newspaper className="h-4 w-4 shrink-0" />
@@ -2550,6 +2550,27 @@ function AnnouncementsAdmin() {
                     }
                   >
                     {type === "info" ? "Info" : type === "promo" ? "Promoção" : type === "update" ? "Atualização" : "Alerta"}
+                  </Button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <Label className="mb-2 block text-xs md:text-sm">Tipo de conteúdo do canal</Label>
+              <div className="flex gap-2 flex-wrap">
+                {(["blog", "lesson", "live", "creatives"] as const).map((contentType) => (
+                  <Button
+                    key={contentType}
+                    size="sm"
+                    variant={newAnnouncement.contentType === contentType ? "default" : "outline"}
+                    onClick={() => setNewAnnouncement({ ...newAnnouncement, contentType })}
+                  >
+                    {contentType === "blog"
+                      ? "Post blog"
+                      : contentType === "lesson"
+                        ? "Aula nova"
+                        : contentType === "live"
+                          ? "Live"
+                          : "Criativos"}
                   </Button>
                 ))}
               </div>
