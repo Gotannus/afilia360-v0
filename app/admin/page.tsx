@@ -2364,6 +2364,9 @@ function AnnouncementsAdmin() {
   const handleAdd = async () => {
     if (!newAnnouncement.title && !newAnnouncement.message && !newAnnouncement.content) return
 
+    setSaving(true)
+    setFormError(null)
+
     const textFallback = newAnnouncement.message || newAnnouncement.excerpt || newAnnouncement.title
     let materials: Array<{ label: string; url: string; type?: string }> = []
 
@@ -2374,10 +2377,12 @@ function AnnouncementsAdmin() {
           materials = parsed
         } else {
           window.alert("Materiais inválidos: use um array JSON.")
+          setSaving(false)
           return
         }
       } catch {
         window.alert("JSON de materiais inválido.")
+        setSaving(false)
         return
       }
     }
@@ -2412,6 +2417,7 @@ function AnnouncementsAdmin() {
         contentType: "blog",
         active: true,
       })
+      setSlugManuallyEdited(false)
       setIsAdding(false)
       fetchAnnouncements()
     } else {
@@ -2595,153 +2601,6 @@ function AnnouncementsAdmin() {
                 ))}
               </div>
             </div>
-            <div>
-              <Label className="mb-2 block text-xs md:text-sm">Tipo de conteúdo do canal</Label>
-              <div className="flex gap-2 flex-wrap">
-                {(["blog", "lesson", "live", "creatives"] as const).map((contentType) => (
-                  <Button
-                    key={contentType}
-                    size="sm"
-                    variant={newAnnouncement.contentType === contentType ? "default" : "outline"}
-                    onClick={() => setNewAnnouncement({ ...newAnnouncement, contentType })}
-                  >
-                    {contentType === "blog"
-                      ? "Post blog"
-                      : contentType === "lesson"
-                        ? "Aula nova"
-                        : contentType === "live"
-                          ? "Live"
-                          : "Criativos"}
-                  </Button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <Label className="mb-2 block text-xs md:text-sm">Tipo de conteúdo do canal</Label>
-              <div className="flex gap-2 flex-wrap">
-                {(["blog", "lesson", "live", "creatives"] as const).map((contentType) => (
-                  <Button
-                    key={contentType}
-                    size="sm"
-                    variant={newAnnouncement.contentType === contentType ? "default" : "outline"}
-                    onClick={() => setNewAnnouncement({ ...newAnnouncement, contentType })}
-                  >
-                    {contentType === "blog"
-                      ? "Post blog"
-                      : contentType === "lesson"
-                        ? "Aula nova"
-                        : contentType === "live"
-                          ? "Live"
-                          : "Criativos"}
-                  </Button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <Label className="mb-2 block text-xs md:text-sm">Tipo de conteúdo do canal</Label>
-              <div className="flex gap-2 flex-wrap">
-                {(["blog", "lesson", "live", "creatives"] as const).map((contentType) => (
-                  <Button
-                    key={contentType}
-                    size="sm"
-                    variant={newAnnouncement.contentType === contentType ? "default" : "outline"}
-                    onClick={() => setNewAnnouncement({ ...newAnnouncement, contentType })}
-                  >
-                    {contentType === "blog"
-                      ? "Post blog"
-                      : contentType === "lesson"
-                        ? "Aula nova"
-                        : contentType === "live"
-                          ? "Live"
-                          : "Criativos"}
-                  </Button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <Label className="mb-2 block text-xs md:text-sm">Tipo de conteúdo do canal</Label>
-              <div className="flex gap-2 flex-wrap">
-                {(["blog", "lesson", "live", "creatives"] as const).map((contentType) => (
-                  <Button
-                    key={contentType}
-                    size="sm"
-                    variant={newAnnouncement.contentType === contentType ? "default" : "outline"}
-                    onClick={() => setNewAnnouncement({ ...newAnnouncement, contentType })}
-                  >
-                    {contentType === "blog"
-                      ? "Post blog"
-                      : contentType === "lesson"
-                        ? "Aula nova"
-                        : contentType === "live"
-                          ? "Live"
-                          : "Criativos"}
-                  </Button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <Label className="mb-2 block text-xs md:text-sm">Tipo de conteúdo do canal</Label>
-              <div className="flex gap-2 flex-wrap">
-                {(["blog", "lesson", "live", "creatives"] as const).map((contentType) => (
-                  <Button
-                    key={contentType}
-                    size="sm"
-                    variant={newAnnouncement.contentType === contentType ? "default" : "outline"}
-                    onClick={() => setNewAnnouncement({ ...newAnnouncement, contentType })}
-                  >
-                    {contentType === "blog"
-                      ? "Post blog"
-                      : contentType === "lesson"
-                        ? "Aula nova"
-                        : contentType === "live"
-                          ? "Live"
-                          : "Criativos"}
-                  </Button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <Label className="mb-2 block text-xs md:text-sm">Tipo de conteúdo do canal</Label>
-              <div className="flex gap-2 flex-wrap">
-                {(["blog", "lesson", "live", "creatives"] as const).map((contentType) => (
-                  <Button
-                    key={contentType}
-                    size="sm"
-                    variant={newAnnouncement.contentType === contentType ? "default" : "outline"}
-                    onClick={() => setNewAnnouncement({ ...newAnnouncement, contentType })}
-                  >
-                    {contentType === "blog"
-                      ? "Post blog"
-                      : contentType === "lesson"
-                        ? "Aula nova"
-                        : contentType === "live"
-                          ? "Live"
-                          : "Criativos"}
-                  </Button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <Label className="mb-2 block text-xs md:text-sm">Tipo de conteúdo do canal</Label>
-              <div className="flex gap-2 flex-wrap">
-                {(["blog", "lesson", "live", "creatives"] as const).map((contentType) => (
-                  <Button
-                    key={contentType}
-                    size="sm"
-                    variant={newAnnouncement.contentType === contentType ? "default" : "outline"}
-                    onClick={() => setNewAnnouncement({ ...newAnnouncement, contentType })}
-                  >
-                    {contentType === "blog"
-                      ? "Post blog"
-                      : contentType === "lesson"
-                        ? "Aula nova"
-                        : contentType === "live"
-                          ? "Live"
-                          : "Criativos"}
-                  </Button>
-                ))}
-              </div>
-            </div>
           </div>
           <div className="mt-4">
             <Label className="mb-1 block text-xs md:text-sm">Conteúdo completo do artigo</Label>
@@ -2776,13 +2635,22 @@ function AnnouncementsAdmin() {
               Dica: para Live + materiais, preencha o Link externo com URL do YouTube e adicione PDF/HTML neste campo.
             </p>
           </div>
+          {formError && (
+            <div className="mt-3 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm text-destructive">
+              {formError}
+            </div>
+          )}
           <div className="mt-4 flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setIsAdding(false)}>
+            <Button variant="outline" onClick={() => setIsAdding(false)} disabled={saving}>
               Cancelar
             </Button>
-            <Button onClick={handleAdd}>
-              <Save className="mr-1 h-4 w-4" />
-              Salvar
+            <Button onClick={handleAdd} disabled={saving} className="gap-2">
+              {saving ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Save className="h-4 w-4" />
+              )}
+              {saving ? "Salvando..." : "Salvar"}
             </Button>
           </div>
         </div>
