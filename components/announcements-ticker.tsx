@@ -9,7 +9,7 @@ const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, proc
 type Announcement = {
   id: string
   text: string
-  type: "info" | "promo" | "update" | "alert"
+  type: string
   active: boolean
 }
 
@@ -51,7 +51,7 @@ export function AnnouncementsTicker() {
         {/* Label fixo */}
         <div className="z-10 flex shrink-0 items-center gap-2 border-r border-border bg-primary px-4 py-2">
           <Megaphone className="h-4 w-4 text-primary-foreground" />
-          <span className="text-xs font-semibold uppercase tracking-wider text-primary-foreground">Avisos</span>
+          <span className="text-xs font-semibold uppercase tracking-wider text-primary-foreground">Novidades</span>
         </div>
 
         <div className="relative flex-1 overflow-hidden py-2">
@@ -63,8 +63,8 @@ export function AnnouncementsTicker() {
           >
             {/* Duplicar para criar loop infinito */}
             {[...announcements, ...announcements, ...announcements].map((announcement, index) => {
-              const config = typeConfig[announcement.type]
-              const Icon = config.icon
+            const config = typeConfig[announcement.type as keyof typeof typeConfig] ?? typeConfig.info
+            const Icon = config.icon
               return (
                 <div key={`${announcement.id}-${index}`} className="flex shrink-0 items-center gap-2">
                   <Icon className={`h-4 w-4 ${config.color}`} />
